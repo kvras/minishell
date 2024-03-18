@@ -9,7 +9,7 @@ void display_cmd(t_command *node)
         printf("output : %d\n", node->output);
         printf("cmd : [");
         i = 0;
-        while(node->cmd && node->cmd[i])
+        while(node && node->cmd && node->cmd[i])
         {
             printf("%s,", node->cmd[i]);
             i++;
@@ -52,11 +52,16 @@ t_command *set_newlist(t_node **node)
 
 void handle_space(t_node **node, char ***array, char **s) 
 {
-    if (!ft_strncmp((*node)->type, "space", 5)) 
+    if (!ft_strncmp((*node)->type, "space", 5))
     {
         *array = ft_array(*array, *s);
         *s = NULL;
         *node = (*node)->next;
+    }
+    else if (!ft_strncmp((*node)->type, "pipe", 4))
+    {
+        *array = ft_array(*array, *s);
+        *s = NULL;
     }
 }
 

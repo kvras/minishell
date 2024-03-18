@@ -194,6 +194,8 @@ int is_builtin(t_command *commands, t_node **env, t_node **addresses)
 		return (put_env(env, commands->cmd[1], addresses), 1);
 	else if(!ft_strncmp(commands->cmd[0], "unset", 5))
 		return (unset_env(env, commands->cmd[1]),1);
+	else if(!ft_strncmp(commands->cmd[0], "$", 1))
+		return (expand(commands->cmd[0]+1, *env), 1);
 	return 0;
 }
 void exec_echo(char **cmd, t_node *env)

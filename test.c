@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 01:11:58 by aben-cha          #+#    #+#             */
-/*   Updated: 2024/03/17 03:26:33 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/03/18 19:53:30 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,9 +108,9 @@ void set_newlist(t_node *node)
     }
     ft_lstadd_back_cmd(&cmd, new);
 
-    printf("-------------commands------------\n");
-    display_cmd(cmd);
-    printf("-------------fin commands-------------\n");
+    // printf("-------------commands------------\n");
+    // display_cmd(cmd);
+    // printf("-------------fin commands-------------\n");
 }
 
 t_command	*ft_lstnew_cmd(char **cmd, int input, int output)
