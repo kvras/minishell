@@ -124,10 +124,8 @@ int check_quote(char *line, char c,	int *offset)
 	return 0;
 }
 
-void parse_line(char *line, t_node **commands, t_node **addresses)
+void parse_line(char *line, t_node **commands, t_node **addresses, int i)
 {
-	int i;
-	i = 0;
 	while(line[i])
 	{
 		if(line[i] == ' ')
@@ -180,64 +178,164 @@ int quotes_syntax(char *line)
 	}
 	return 1;
 }
+int is_builtin(t_command *commands, t_node **env, t_node **addresses)
+{
+	if(!commands->cmd)
+		return 0;
+	if(!ft_strncmp(commands->cmd[0], "echo", 4))
+		return(exec_echo(commands->cmd, *env), 1);
+	else if(!ft_strncmp(commands->cmd[0], "pwd", 3))
+		return (exec_pwd(), 1);
+	else if(!ft_strncmp(commands->cmd[0], "cd", 2))
+		return (exec_cd(commands->cmd[1]), 1);
+	else if(!ft_strncmp(commands->cmd[0], "env", 3))
+		return (exec_env(*env), 1);
+	else if(!ft_strncmp(commands->cmd[0], "export", 6))
+		return (put_env(env, commands->cmd[1], addresses), 1);
+	else if(!ft_strncmp(commands->cmd[0], "unset", 5))
+		return (unset_env(env, commands->cmd[1]),1);
+	return 0;
+}
+void exec_echo(char **cmd, t_node *env)
+{
+	if(!ft_strncmp(cmd[1], "-n", 2))
+	{
+		int i;
+		i = 1;
+		while(cmd[i++])
+		{
+			if(!expand(cmd[i], env))
+				ft_putstr_fd(cmd[i], 1);
+			if(cmd[i + 1])
+				ft_putstr_fd(" ", 1);
+		}
+	}
+	else
+	{
+		int i;
+
+		i = 0;
+		while(cmd[i++])
+		{
+			if(!expand(cmd[i], env))
+				ft_putstr_fd(cmd[i], 1);
+			if(cmd[i + 1])
+				ft_putstr_fd(" ", 1);
+		}
+		ft_putstr_fd("\n", 1);
+	}
+}
 int main(int argc, char **argv, char **env)
 {
 	char    *line = NULL;
 	t_node	*tmp;
-	t_node  *commands = NULL;
+	t_node  *tokens = NULL;
     t_node  *addresses = NULL;
+	t_node *env_lst;
+	t_command *commands = NULL;
+	env_lst = NULL;
+	array_to_list(&env_lst, env, &addresses);
 	atexit(f);
 	while(1)
 	{
 		line = readline("minishell$ ");
-		if(!line || strncmp(line, "exit", 4) == 0)
-			return (free(line), 0);
+		if(!line || !strncmp(line, "exit", 4))
+			return (free(line),	free_addresses(addresses), 0);
 		if(quotes_syntax(line) == 0)
 			return (free(line), 0);
-		if (strncmp(line, "pwd", 3) == 0)
-		{
-			exec_pwd();
-			// return (free(line), 0);
-			free(line);
-			continue;
-		}
-		if (strncmp(line, "cd", 2) == 0)
-		{
-			exec_cd(line + 3);
-			//return (free(line), 0);
-			free(line);
-			continue;
-		}
-		if (strncmp(line, "env", 3) == 0)
-		{
-			exec_env(env);
-			free(line);
-			continue;
-		}
-		if (strncmp(line, "export", 6) == 0)
-		{
-			// put_env("saad=hamdouni");
-			printf("%d\n",put_env("SAAD=hamdouni"));
-			free(line);
-			continue;
-		}
-		if (strncmp(line, "unset", 5) == 0)
-		{
-			printf("%d\n",unset_env("LESS"));
-			free(line);
-			continue;
-		}
-		parse_line(line, &commands, &addresses);
-		while(commands)
-		{
-			tmp = commands;
-			commands = commands->next;
-			printf("%s   | %s  \n", (char *)tmp->value, tmp->type);
-		}
-		free_addresses(addresses);
-		addresses = NULL;
-		commands = NULL;
+		parse_line(line, &tokens, &addresses, 0);
+		execute_commands(set_newlist(&tokens), &env_lst, &addresses);
+		// is_builtin(commands, &env_lst, &addresses);
+		// while(tokens)
+		// {
+		// 	tmp = tokens;
+		// 	tokens = tokens->next;
+		// 	printf("%s   | %s  \n", (char *)tmp->value, tmp->type);
+		// }
+		tokens = NULL;
 		free(line);
     }
+	free_addresses(addresses);
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// if (strncmp(line, "pwd", 3) == 0)
+		// {
+		// 	exec_pwd();
+		// 	free(line);
+		// 	continue;
+		// }
+		// if (strncmp(line, "cd", 2) == 0)
+		// {
+		// 	exec_cd(line + 3);
+		// 	free(line);
+		// 	continue;
+		// }
+		// if (strncmp(line, "$HOME", 5) == 0)
+		// {
+		// 	expand(env_lst,"HOME");
+		// 	free(line);
+		// 	continue;
+		// }
+		// if (strncmp(line, "env", 3) == 0)
+		// {
+		// 	exec_env(env_lst);
+		// 	free(line);
+		// 	continue;
+		// }
+		// if (strncmp(line, "export", 6) == 0)
+		// {
+		// 	put_env(&env_lst,line+7,&addresses);
+		// 	free(line);
+		// 	continue;
+		// }
+		// if (strncmp(line, "unset", 5) == 0)
+		// {
+		// 	unset_env(&env_lst, line+6);
+		// 	free(line);
+		// 	continue;
+		// }

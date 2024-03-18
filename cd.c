@@ -5,7 +5,11 @@ int exec_cd(char *path)
     int     response;
     char    *cwd;
     char    *new_path;
-
+    if(path == NULL)
+    {
+        response = chdir(getenv("HOME"));
+        return response;
+    }
     if(path[0] == '/')
     {
         response = chdir(path);

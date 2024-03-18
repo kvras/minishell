@@ -21,11 +21,11 @@ int ft_malloc(size_t size, void **ptr, t_node **addresses)
         free_addresses(*addresses);
         return 0;
     }
-    add_back(addresses, ft_alloc(*ptr, NULL));
+    add_back(addresses, ft_alloc(ptr, NULL));
     return 1;
 }
 
-t_node	*ft_alloc(void *value, char *type)
+t_node	*ft_alloc(void **value, char *type)
 {
 	t_node	*ptr;
 
@@ -33,7 +33,7 @@ t_node	*ft_alloc(void *value, char *type)
 	if (!ptr)
 		return (NULL);
 	ptr->type = type;
-	ptr->value = value;
+	ptr->value = *value;
 	ptr->next = NULL;
 	return (ptr);
 }
