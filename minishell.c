@@ -133,7 +133,7 @@ void parse_line(char *line, t_node **commands, t_node **addresses, int i)
 		else if(line[i] == '$')
 			ft_expand(&line[i], commands, &i, addresses);
 		else if(line[i] == '<' && line[i + 1] == '<' && ++i)
-			ft_lstadd_back1(commands, ft_lstnew1("<<", "her_doc", addresses));
+			ft_lstadd_back1(commands, ft_lstnew1("<<", "here_doc", addresses));
 		else if(line[i] == '>' && line[i + 1] == '>' && ++i)
 			ft_lstadd_back1(commands, ft_lstnew1(">>", "append", addresses));
 		else if(line[i] == '<')
@@ -230,11 +230,9 @@ void exec_echo(char **cmd, t_node *env)
 int main(int argc, char **argv, char **env)
 {
 	char    *line = NULL;
-	t_node	*tmp;
 	t_node  *tokens = NULL;
     t_node  *addresses = NULL;
 	t_node *env_lst;
-	t_command *commands = NULL;
 	env_lst = NULL;
 	array_to_list(&env_lst, env, &addresses);
 	atexit(f);
@@ -247,13 +245,6 @@ int main(int argc, char **argv, char **env)
 			return (free(line), 0);
 		parse_line(line, &tokens, &addresses, 0);
 		execute_commands(set_newlist(&tokens), &env_lst, &addresses);
-		// is_builtin(commands, &env_lst, &addresses);
-		// while(tokens)
-		// {
-		// 	tmp = tokens;
-		// 	tokens = tokens->next;
-		// 	printf("%s   | %s  \n", (char *)tmp->value, tmp->type);
-		// }
 		tokens = NULL;
 		free(line);
     }

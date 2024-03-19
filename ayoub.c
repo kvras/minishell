@@ -1,5 +1,20 @@
 #include "minishell.h"
 
+int pipe_parse_error(t_command *cmd)
+{
+    t_command *tmp;
+    tmp = cmd;
+    while(tmp)
+    {
+        if(tmp && tmp->cmd && !tmp->cmd[0])
+        {
+            printf("minishell$ parse error near `|'\n");
+            return (127);
+        }
+        tmp = tmp->next;
+    }
+    return 0;
+}
 void display_cmd(t_command *node)
 {
     int i;
@@ -43,15 +58,20 @@ t_command *set_newlist(t_node **node)
         }
     }
     array = ft_array(array, s);
-    ft_lstadd_back_cmd(&cmd, ft_lstnew_cmd(array, fd_in, fd_out));
-    // printf("-------------commands------------\n");
-    // display_cmd(cmd);
-    // printf("-------------fin commands-------------\n");
+    if(array)
+        ft_lstadd_back_cmd(&cmd, ft_lstnew_cmd(array, fd_in, fd_out));
+    if(pipe_parse_error(cmd) == 127)
+        return NULL;
+    printf("-------------commands------------\n");
+    display_cmd(cmd);
+    printf("-------------fin commands-------------\n");
     return cmd;
 }
 
 void handle_space(t_node **node, char ***array, char **s) 
 {
+      if(!*node)
+        return ;
     if (!ft_strncmp((*node)->type, "space", 5))
     {
         *array = ft_array(*array, *s);
@@ -67,11 +87,15 @@ void handle_space(t_node **node, char ***array, char **s)
 
 void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int *fd_out) 
 {
+    t_command *response;
+    if(!*node)
+        return ;
     if (!ft_strncmp((*node)->type, "pipe", 4)) 
     {
         if (*array) 
         {
-            ft_lstadd_back_cmd(cmd, ft_lstnew_cmd(*array, *fd_in, *fd_out));
+            response = ft_lstnew_cmd(*array, *fd_in, *fd_out);
+            ft_lstadd_back_cmd(cmd, response);
             *array = NULL;
             *fd_out = 1;
             *fd_in = 0;
@@ -82,6 +106,8 @@ void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int 
 
 void handle_append_or_red_out(t_node **node, int *fd_out, int flag) 
 {
+      if(!*node)
+        return ;
     if (!ft_strncmp((*node)->type, "append", 6) || !ft_strncmp((*node)->type, "rd_out", 6)) 
     {
         flag = 0;
@@ -127,6 +153,7 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag)
             perror("");
     }
 }
+
 void execute_commands(t_command *cmd, t_node **env, t_node **addresses)
 {
     t_command *tmp;
