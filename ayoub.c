@@ -1,20 +1,48 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ayoub.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
+/*   Updated: 2024/04/01 03:43:25 by miguiji          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int pipe_parse_error(t_command *cmd)
+int pipe_parse_error(t_node *node)
 {
-    t_command *tmp;
-    tmp = cmd;
-    while(tmp)
+    t_node *ptr; 
+
+    ptr = node;
+    while(ptr && !ft_strncmp(ptr->type, "space", 5))
+        ptr = ptr -> next;
+    if (ptr && !ft_strncmp(ptr->type, "pipe", 4))
     {
-        if(tmp && tmp->cmd && !tmp->cmd[0])
+        printf("parse error near `|'\n");
+        return 1;
+    }
+    while (ptr)
+    {
+        if (ptr && !ft_strncmp(ptr->type, "pipe", 4))
         {
-            printf("minishell$ parse error near `|'\n");
-            return (127);
+            ptr = ptr -> next;
+            while(ptr && !ft_strncmp(ptr->type, "space", 5))
+                ptr = ptr -> next;
+            if(!ptr || !ft_strncmp(ptr->type, "pipe", 4))
+            {
+                printf("parse error near `|'\n");
+                return 1;
+            }
         }
-        tmp = tmp->next;
+        if(ptr)
+            ptr = ptr -> next;
     }
     return 0;
 }
+
 void display_cmd(t_command *node)
 {
     int i;
@@ -43,6 +71,8 @@ t_command *set_newlist(t_node **node)
     int fd_in = 0;
     int flag = 0;
 
+    if(pipe_parse_error(*node))
+        return NULL;
     while (*node) 
     {
         handle_space(node, &array, &s);
@@ -58,13 +88,11 @@ t_command *set_newlist(t_node **node)
         }
     }
     array = ft_array(array, s);
-    if(array)
+    if(array && *array)
         ft_lstadd_back_cmd(&cmd, ft_lstnew_cmd(array, fd_in, fd_out));
-    if(pipe_parse_error(cmd) == 127)
-        return NULL;
-    printf("-------------commands------------\n");
-    display_cmd(cmd);
-    printf("-------------fin commands-------------\n");
+    // printf("-------------commands------------\n");
+    // display_cmd(cmd);
+    // printf("-------------fin commands-------------\n");
     return cmd;
 }
 
@@ -92,7 +120,7 @@ void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int 
         return ;
     if (!ft_strncmp((*node)->type, "pipe", 4)) 
     {
-        if (*array) 
+        if (*array && **array) 
         {
             response = ft_lstnew_cmd(*array, *fd_in, *fd_out);
             ft_lstadd_back_cmd(cmd, response);
@@ -100,6 +128,8 @@ void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int 
             *fd_out = 1;
             *fd_in = 0;
         }
+        // else
+        //     printf("minishell$ parse error near `|'\n");
         *node = (*node)->next;
     }
 }
@@ -114,9 +144,9 @@ void handle_append_or_red_out(t_node **node, int *fd_out, int flag)
         if (!ft_strncmp((*node)->type, "append", 6))
             flag = 1;
         *node = (*node)->next;
-        while (!ft_strncmp((*node)->type, "space", 5))
+        while (*node && !ft_strncmp((*node)->type, "space", 5))
             *node = (*node)->next;
-        if (!ft_strncmp((*node)->type, "word", 4) || !ft_strncmp((*node)->type, "quote", 5)) 
+        if (*node && (!ft_strncmp((*node)->type, "word", 4) || !ft_strncmp((*node)->type, "quote", 5))) 
         {
             if (flag)
                 *fd_out = open((*node)->value, O_CREAT | O_WRONLY | O_APPEND, 0644);
@@ -154,34 +184,30 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag)
     }
 }
 
-void execute_commands(t_command *cmd, t_node **env, t_node **addresses)
+void execute_commands(t_command *cmd, char ***env, t_node **addresses)
 {
     t_command *tmp;
     char *path;
-   int i = 0;
     tmp= cmd;
-    path = getenv("PATH");
-    while(tmp)
-    {
-        tmp = tmp->next;
-        i++;
-    }
+    path = get_environment(*env, "PATH=");
     while(cmd) 
     {
-        if(!is_builtin(cmd, env, addresses))
-        {
-            cmd->cmd = ft_pathname(path, cmd->cmd);
-            make_process(cmd);
-        }
+        // if(!is_builtin(cmd, env, addresses))
+        // {
+            cmd->cmd = ft_pathname(path, cmd->cmd, *env);
+            make_process(cmd, *env);
+        // }
         cmd = cmd->next;
     }
-    while(i-- > 0)
-        wait(NULL);
+    while(wait(NULL)>0);
 }
-void make_process(t_command *command)
+int make_process(t_command *command, char **env)
 {
     int fd[2];
     int pid;
+    int response = 0;
+    if(!command->cmd)
+        return 0;
     if(command->next)
     {
         if(pipe(fd) == -1)
@@ -192,11 +218,9 @@ void make_process(t_command *command)
         perror("Error forking");
     if(pid == 0)
     {
+        dup2(command->input, 0);
         if(command->input != 0)
-        {
-            dup2(command->input, 0);
             close(command->input);
-        }
         if(command->next && command->output == 1)
         {
             dup2(fd[1], 1);
@@ -207,30 +231,32 @@ void make_process(t_command *command)
             dup2(command->output, 1);
             close(command->output);
         }
-        execve(command->cmd[0], command->cmd, NULL);
-        perror("Error execve");
+        response = execve(command->cmd[0], command->cmd,env);
     }
     else
     {
         close(fd[1]);
         command = command->next;
         if(command)
-        command->input = fd[0];
+            command->input = fd[0];
+        else
+            close(fd[0]);
     }
+    return 0;
 }
+
 int ft_herdoc(char *s)
 {
     int fd[2];
     char *line;
     char *tmp;
     pipe(fd);
-    dup2(fd[0], 0);
     while(1)
     {
-        line = readline("heredoc>");
+        line = readline("heredoc> ");
         if(!line)
             break;
-        if(!ft_strncmp(line, s, ft_strlen(s)))
+        if(!ft_strncmp(line, s, ft_strlen(s)) && ft_strlen(line) == ft_strlen(s))
         {
             free(line);
             break;
@@ -243,27 +269,46 @@ int ft_herdoc(char *s)
     close(fd[1]);
     return (fd[0]);
 }
-char	**ft_pathname(char *p, char **cmdargs)
+char	*get_environment(char **envp, char *var)
+{
+	int		i;
+	char	*response;
+
+	response = NULL;
+	i = 0;
+	while (envp && envp[i])
+	{
+		response = ft_strnstr(envp[i], var, ft_strlen(var));
+		if (response)
+            return response + ft_strlen(var);
+		i++;
+	}
+	return (NULL);
+}
+char	**ft_pathname(char *p, char **cmdargs, char **env)
 {
 	int		i;
 	char	*cmd;
     char    **paths;
 
     paths = ft_split(p, ':');
-    if(!paths || !cmdargs || !*cmdargs)
+    if(!cmdargs || !*cmdargs)
         return ( NULL);
 	i = -1;
     if(cmdargs[0][0] == '/')
         return (cmdargs);
-	while (paths[++i])
+	while (paths && paths[++i])
 	{
 		cmd = ft_join_free(paths[i], "/");
 		cmd = ft_join_free(cmd, cmdargs[0]);
 		if (access(cmd, F_OK | X_OK) == 0)
-			break ;
+        {
+            cmdargs[0] = cmd;
+            return (cmdargs);
+        }
 	}
-    cmdargs[0] = cmd;
-	return (cmdargs);
+    printf("command not found\n");
+	return (NULL);
 }
 char	*ft_join_free(char *s, const char *buf)
 {

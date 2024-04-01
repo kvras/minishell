@@ -1,131 +1,103 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   env.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/28 02:24:09 by miguiji           #+#    #+#             */
+/*   Updated: 2024/04/01 03:31:45 by miguiji          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-// void free_array(char **array)
-// {
-//     int i;
+char **get_env(char **env)
+{
+    int i = 0;
+    char **array;
 
-//     i = 0;
-//     if (!array)
-//         return;
-//     while (array[i])
-//     {
-//         free(array[i]);
-//         i++;
-//     }
-//     free(array);
-// }
-// char **array_append(char **array, char *s, t_node **addresses)
-// {
-//     char **new;
-//     int i;
-//     int j;
+    while(env[i])
+        i++;
+    array = (char **)malloc((sizeof(char *) * (i + 1)));
+    if(!array)
+        return NULL;
+    i = 0;
+    while(env && env[i])
+    {
+        array[i] = ft_strdup(env[i]);
+        i++;
+    }
+    array[i] = NULL;
+    return (array);
+}
 
-//     i = 0;
-//     j = 0;
-//     if (!array)
-//     {
-//         new = (char **)malloc(sizeof(char *) * 2);
-//         // ft_malloc(sizeof(char *) * 2, (void **)&new, addresses);
-//         new[0] = s;
-//         new[1] = NULL;
-//         return new;
-//     }
-//     else
-//     {
-//         while (array[i])
-//             i++;
-//         new = (char **)malloc(sizeof(char *) * (i + 2));
-//         // ft_malloc(sizeof(char *) * (i + 2), (void **)&new, addresses);
-//     }
-//     while (array[j])
-//     {
-//         new[j] = ft_strdup(array[j]);
-//         j++;
-//     }
-//     new[j] = s;
-//     new[j + 1] = NULL;
-//     return new;
-// }
+// hadi bach n addiw wa7ed lvar l env
+void exec_export(char *var, char ***env)
+{
+    int i;
+    i = 0;
+    if(!var)
+        return ;
+   while(env && *env && (*env)[i])
+   {
+        if(!ft_strncmp((*env)[i], var, get_equal(var)))
+        {
+            free((*env)[i]);
+             (*env)[i] = ft_strdup(var);
+             return ;
+        }
+        i++;
+   }
+    if(ft_isalpha(var[0]) || var[0] == '_')
+        *env = ft_array(*env, ft_strdup(var));
+    else
+         printf("export: not a valid identifier\n");
+}
 
+// hadi bach n unsetiw wa7ed lvar
+void exec_unset(char *s, char ***env)
+{
+    int i = 0;
+    int len = 0;
+    if(!s)
+        return ;
+    while(env && *env && (*env)[i])
+    {
+        if(ft_strncmp((*env)[i], s, ft_strlen(s)))
+            len++;
+        i++;
+    }
+    char **unset_array = (char **)malloc((sizeof(char *) * (len+1)));
+    if(!unset_array)
+        return ;
+    i = 0;
+    int j = 0;
+    while(env && *env && (*env)[i])
+    {
+        if(ft_strncmp((*env)[i], s, ft_strlen(s)))
+            unset_array[j++] = ft_strdup((*env)[i]);
+        i++;
+    }
+    unset_array[j] = NULL;
+    *env = unset_array;
+}
 
-// char **ft_array_remove(char **array, char *s, t_node **addresses)
-// {
-//     int i;
-//     int j;
-//     char **new;
-
-//     i = 0;
-//     j = 0;
-//     if (!array)
-//         return (NULL);
-//     while (array[i])
-//         i++;
-//     // ft_malloc(sizeof(char *) * (i + 1), (void **)&new, addresses);
-//     new = (char **)malloc(sizeof(char *) * (i + 1));
-//     if (!new)
-//         return (NULL);
-//     i = 0;
-//     while (array[i])
-//     {
-//         if (ft_strncmp(array[i], s, get_equal(s)))
-//         {
-//             new[j] = ft_strdup(array[i]);
-//             j++;
-//         }
-//         i++;
-//     }
-//     new[j] = NULL;
-//     return new;
-// }
-
-void array_to_list(t_node **lst, char **array, t_node **addresses)
+//hadi bach n executiw env
+int exec_env(char **env)
 {
     int i;
 
     i = 0;
-    while (array[i])
+    while(env && env[i])
     {
-        ft_lstadd_back1(lst, ft_lstnew1(array[i], "var", addresses));
-        i++;
-    }
-}
-
-//hadi bach n executiw env
-int exec_env(t_node *env)
-{
-    t_node *tmp;
-    tmp = env;
-    while(tmp)
-    {
-        ft_putstr_fd((char *)tmp->value, 1);
+        ft_putstr_fd(env[i], 1);
         ft_putstr_fd("\n", 1);
-        tmp = tmp->next;
+        i++;
     }
     return 0;
 }
 
-// hadi bach n addiw wa7ed lvar
-void put_env(t_node **env, char *var, t_node **addresses)
-{
-    t_node *tmp;
-    tmp = *env;
-    int equal_index;
-    while(tmp)
-    {
-        equal_index = get_equal(var);   
-        if(equal_index == 0)
-            return ;
-        if(!ft_strncmp(tmp->value, var, equal_index))
-        {
-            free(tmp->value);
-            tmp->value = ft_strdup(var);
-            return ;
-        }
-        tmp = tmp->next;
-    }
-    ft_lstadd_back1(env, ft_lstnew1(var, "var", addresses));
-    return ;
-}
 // hadi bach n unsetiw wa7ed lvar
 int get_equal(char *s)
 {
@@ -135,47 +107,44 @@ int get_equal(char *s)
     while(s && s[i])
     {
         if(s[i] == '=')
-            return --i;
+            return i;
         i++;
     }
     return 0;
 }
-
-void unset_env(t_node **env, char *var)
+int check_char(char *s,char c)
 {
-    t_node *tmp;
-    t_node *prev;
-    tmp = *env;
-    prev = NULL;
-
-    while(tmp)
+    if(!s)
+        return 0;
+    while(*s)
     {
-        if(!ft_strncmp(tmp->value, var, get_equal(tmp->value)))
-        {
-            if(prev)
-                prev->next = tmp->next;
-            else
-                *env = tmp->next;
-            return ;
-        }
-        prev = tmp;
-        tmp = tmp->next;
-    }
-    return ;
-}
-int expand(char *var, t_node *env)
-{
-    t_node *tmp;
-    tmp = env;
-    while (tmp)
-    {
-        if (!ft_strncmp(tmp->value, var, get_equal(tmp->value)))
-        {
-            ft_putstr_fd(tmp->value + get_equal(tmp->value) + 2, 1);
-            ft_putstr_fd("\n", 1);
+        if(*s == c)
             return 1;
+        s++;
+    
+    }
+    return (0);
+}
+int expand(char *var, char **env)
+{
+    int i;
+
+    i = 0;
+    if (!check_char(var, '$'))
+        return (0);
+    char *trim = ft_strnstr(var, "$",ft_strlen(var));
+    while (env && env[i])
+    {
+        if (!ft_strncmp(,, get_equal(env[i])))
+        {
         }
-        tmp = tmp->next;
+        else if (!ft_strncmp(env[i], trim + 1, get_equal(env[i])))
+        {
+            ft_putstr_fd(env[i] + get_equal(env[i]) + 1, 1);
+            ft_putstr_fd("\n", 1);
+            return (1);
+        }
+        i++;
     }
     return 0;
 }
