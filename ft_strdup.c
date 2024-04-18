@@ -1,29 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_strlcpy.c                                       :+:      :+:    :+:   */
+/*  ft_strdup.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 21:19:25 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/06 21:42:08 by miguiji          ###   ########.fr       */
+/*   Created: 2023/11/01 23:28:20 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 21:32:54 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
+char	*ft_strdup(const char *str, t_node **addresses)
 {
-	size_t	i;
+	char	*ptr;
+	size_t	len;
 
-	i = 0;
-	if (dstsize == 0)
-		return (ft_strlen(src));
-	while (i < dstsize - 1 && src[i])
-	{
-		dst[i] = src[i];
-		i++;
-	}
-	dst[i] = '\0';
-	return (ft_strlen(src));
+	len = ft_strlen(str);
+	ptr = ft_malloc(len + 1, addresses);
+	if (ptr == NULL)
+		return (NULL);
+	ptr = (char *)ft_memcpy(ptr, str, len);
+	ptr[len] = '\0';
+	return (ptr);
 }

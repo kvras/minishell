@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:05 by miguiji           #+#    #+#             */
-/*   Updated: 2024/03/28 02:24:06 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/03 07:58:32 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,15 +38,18 @@ t_node	*ft_lstnew1(void *value, char *type, t_node **addresses)
 {
 	t_node	*ptr;
 
-	ptr = NULL;
-	ft_malloc(sizeof(t_node), (void **)&ptr, addresses);
+	ptr = ft_malloc(sizeof(t_node), addresses);
 	if (!ptr)
 		return (NULL);
-	ft_malloc(sizeof(char) * (ft_strlen(type) + 1), (void **)&ptr->type, addresses);
-	ft_malloc(sizeof(char) * (ft_strlen(value) + 1), (void **)&ptr->value, addresses);
+	ptr->type = ft_malloc(sizeof(char) * (ft_strlen(type) + 1), addresses);
+	if(!ptr->type)
+		return (NULL);
+	ptr->value = ft_malloc(sizeof(char) * (ft_strlen(value) + 1), addresses);
+	if(!ptr->value)
+		return (NULL);
 	ft_strlcpy(ptr->type, type, ft_strlen(type) + 1);
 	ft_strlcpy(ptr->value, value, ft_strlen(value) + 1);
-	ptr -> next = NULL;
+	ptr->next = NULL;
 	return (ptr);
 }
 

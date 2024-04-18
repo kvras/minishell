@@ -1,7 +1,9 @@
 # NAME = minishell
 # CC = cc
 # CFLAGS =
- SRC = minishell.c ft_malloc.c f.c pwd.c cd.c env.c ayoub.c signals.c
+ SRC = minishell.c ft_malloc.c f.c pwd.c cd.c env.c ayoub.c signals.c ft_strjoin.c ft_strncmp.c \
+       ft_split.c ft_strlen.c ft_strdup.c ft_memcpy.c ft_memmove.c \
+	   ft_putstr_fd.c ft_strlcpy.c ft_strnstr.c ft_isalpha.c
 # LINKREADLINELIB = $(shell brew --prefix readline)/lib
 # LINKREADLINELIB1 = $(shell brew --prefix readline)/include
 # OBJ = $(SRC:.c=.o)
@@ -32,20 +34,17 @@ LINKREADLINELIB1 = $(shell brew --prefix readline)/include
 
 all: $(NAME)
 
-$(NAME): $(OBJ) $(LIBFT)
-	(cd libft && make) 
-	$(CC) $(CFLAGS) $(OBJ) libft/libft.a -g -L $(LINKREADLINELIB) -lreadline -o $(NAME)
+$(NAME): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -g -L $(LINKREADLINELIB) -lreadline -o $(NAME)
 
 %.o: %.c minishell.h
 	$(CC) $(CFLAGS) -g -c $< -I $(LINKREADLINELIB1) -o $@
 
 clean:
 	rm -f $(OBJ)
-	$(MAKE) -C libft clean
 
 fclean: clean
 	rm -f $(NAME)
-	$(MAKE) -C libft fclean
 
 re: fclean all
 

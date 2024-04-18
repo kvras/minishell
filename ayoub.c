@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/01 03:43:25 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/17 10:07:53 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,58 +62,59 @@ void display_cmd(t_command *node)
         node = node->next;
     }
 }
-t_command *set_newlist(t_node **node)
+t_command *set_newlist(t_node **node, t_node **addresses)
 {
     t_command *cmd = NULL;
     char *s = NULL;
     char **array = NULL;
-    int fd_out = 1;
-    int fd_in = 0;
     int flag = 0;
+    t_fd fd;
+    fd.out = 1;
+    fd.in = 0;
 
     if(pipe_parse_error(*node))
         return NULL;
     while (*node) 
     {
-        handle_space(node, &array, &s);
-        handle_pipe(node, &cmd, &array, &fd_in, &fd_out);
-        handle_append_or_red_out(node, &fd_out, flag);
-        handle_here_doc_or_rd_in(node, &fd_in, flag);
+        handle_space(node, &array, &s, addresses);
+        handle_pipe(node, &cmd, &array, &fd, addresses);
+        handle_append_or_red_out(node, &fd.out, flag);
+        handle_here_doc_or_rd_in(node, &fd.in, flag, addresses);
         if(*node && (!ft_strncmp((*node)->type, "pipe", 4) || !ft_strncmp((*node)->type, "space", 5)))
             continue ;
         if(*node)
         {
-            s = ft_strjoin(s, (*node)->value);
+            s = ft_strjoin(s, (*node)->value, addresses);
             (*node) = (*node)->next;
         }
     }
-    array = ft_array(array, s);
+    array = ft_array(array, s, addresses);
     if(array && *array)
-        ft_lstadd_back_cmd(&cmd, ft_lstnew_cmd(array, fd_in, fd_out));
+        ft_lstadd_back_cmd(&cmd, ft_lstnew_cmd(array, fd.in, fd.out, addresses));
     // printf("-------------commands------------\n");
     // display_cmd(cmd);
     // printf("-------------fin commands-------------\n");
     return cmd;
 }
 
-void handle_space(t_node **node, char ***array, char **s) 
+void handle_space(t_node **node, char ***array, char **s, t_node **addresses)
 {
       if(!*node)
         return ;
     if (!ft_strncmp((*node)->type, "space", 5))
     {
-        *array = ft_array(*array, *s);
+        *array = ft_array(*array, *s, addresses);
         *s = NULL;
         *node = (*node)->next;
     }
     else if (!ft_strncmp((*node)->type, "pipe", 4))
     {
-        *array = ft_array(*array, *s);
+        *array = ft_array(*array, *s, addresses);
         *s = NULL;
     }
 }
 
-void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int *fd_out) 
+void handle_pipe(t_node **node, t_command **cmd, char ***array, t_fd *fd, t_node **addresses)
 {
     t_command *response;
     if(!*node)
@@ -122,14 +123,12 @@ void handle_pipe(t_node **node, t_command **cmd, char ***array, int *fd_in, int 
     {
         if (*array && **array) 
         {
-            response = ft_lstnew_cmd(*array, *fd_in, *fd_out);
+            response = ft_lstnew_cmd(*array, fd->in, fd->out, addresses);
             ft_lstadd_back_cmd(cmd, response);
             *array = NULL;
-            *fd_out = 1;
-            *fd_in = 0;
+            fd->out = 1;
+            fd->in = 0;
         }
-        // else
-        //     printf("minishell$ parse error near `|'\n");
         *node = (*node)->next;
     }
 }
@@ -159,7 +158,7 @@ void handle_append_or_red_out(t_node **node, int *fd_out, int flag)
     }
 }
 
-void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag) 
+void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag, t_node **addresses)
 {
     if(!*node)
         return ;
@@ -176,7 +175,7 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag)
             if (flag)
                 *fd_in = open((*node)->value, O_RDONLY, 0644);
             else
-                *fd_in = ft_herdoc((*node)->value);
+                *fd_in = ft_herdoc((*node)->value, addresses);
             *node = (*node)->next;
         }
         else
@@ -192,11 +191,8 @@ void execute_commands(t_command *cmd, char ***env, t_node **addresses)
     path = get_environment(*env, "PATH=");
     while(cmd) 
     {
-        // if(!is_builtin(cmd, env, addresses))
-        // {
-            cmd->cmd = ft_pathname(path, cmd->cmd, *env);
-            make_process(cmd, *env);
-        // }
+        cmd->cmd = ft_pathname(path, cmd->cmd, *env, addresses);
+        make_process(cmd, *env);
         cmd = cmd->next;
     }
     while(wait(NULL)>0);
@@ -245,7 +241,7 @@ int make_process(t_command *command, char **env)
     return 0;
 }
 
-int ft_herdoc(char *s)
+int ft_herdoc(char *s, t_node **addresses)
 {
     int fd[2];
     char *line;
@@ -261,9 +257,8 @@ int ft_herdoc(char *s)
             free(line);
             break;
         }
-        tmp = ft_strjoin(line, "\n");
+        tmp = ft_strjoin(line, "\n", addresses);
         write(fd[1], tmp, ft_strlen(tmp));
-        free(tmp);
         free(line);
     }
     close(fd[1]);
@@ -285,13 +280,13 @@ char	*get_environment(char **envp, char *var)
 	}
 	return (NULL);
 }
-char	**ft_pathname(char *p, char **cmdargs, char **env)
+char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses)
 {
 	int		i;
 	char	*cmd;
     char    **paths;
 
-    paths = ft_split(p, ':');
+    paths = ft_split(p, ':', addresses);
     if(!cmdargs || !*cmdargs)
         return ( NULL);
 	i = -1;
@@ -299,8 +294,8 @@ char	**ft_pathname(char *p, char **cmdargs, char **env)
         return (cmdargs);
 	while (paths && paths[++i])
 	{
-		cmd = ft_join_free(paths[i], "/");
-		cmd = ft_join_free(cmd, cmdargs[0]);
+		cmd = ft_join_free(paths[i], "/", addresses);
+		cmd = ft_join_free(cmd, cmdargs[0], addresses);
 		if (access(cmd, F_OK | X_OK) == 0)
         {
             cmdargs[0] = cmd;
@@ -310,19 +305,18 @@ char	**ft_pathname(char *p, char **cmdargs, char **env)
     printf("command not found\n");
 	return (NULL);
 }
-char	*ft_join_free(char *s, const char *buf)
+char	*ft_join_free(char *s, const char *buf, t_node **addresses)
 {
 	char	*r;
 
-	r = ft_strjoin(s, buf);
-	free(s);
+	r = ft_strjoin(s, buf, addresses);
 	return (r);
 }
-t_command	*ft_lstnew_cmd(char **cmd, int input, int output)
+t_command	*ft_lstnew_cmd(char **cmd, int input, int output, t_node **addresses)
 {
 	t_command	*ptr;
 
-	ptr = (t_command *)malloc(sizeof(t_command));
+    ptr = ft_malloc(sizeof(t_command), addresses);
 	if (!ptr)
 		return (NULL);
 	ptr->cmd = cmd;
@@ -362,7 +356,7 @@ void	ft_lstadd_back_cmd(t_command **lst, t_command *new)
 		ptr -> next = new;
 	}
 }
-char **ft_array(char **array, char *s)
+char **ft_array(char **array, char *s, t_node **addresses)
 {
     char **new;
     int i;
@@ -372,7 +366,9 @@ char **ft_array(char **array, char *s)
     j = 0;
     if (!array)
     {
-        new = (char **)malloc(sizeof(char *) * 2);
+        new = ft_malloc(sizeof(char *) * 2, addresses);
+        if (!new)
+            return NULL;
         new[0] = s;
         new[1] = NULL;
         return new;
@@ -381,7 +377,9 @@ char **ft_array(char **array, char *s)
     {
         while (array[i])
             i++;
-        new = (char **)malloc(sizeof(char *) * (i + 2));
+        new = ft_malloc(sizeof(char *) * (i + 2), addresses);
+        if (!new)
+            return NULL;
     }
     while (array[j])
     {
@@ -390,6 +388,5 @@ char **ft_array(char **array, char *s)
     }
     new[j] = s;
     new[j + 1] = NULL;
-    free(array);
     return new;
 }

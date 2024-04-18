@@ -1,37 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_substr.c                                        :+:      :+:    :+:   */
+/*  ft_memcpy.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/01 23:46:01 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/10 23:45:23 by miguiji          ###   ########.fr       */
+/*   Created: 2023/10/31 18:16:17 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/07 16:27:10 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_substr(const char *str, unsigned int start, size_t len)
+void	*ft_memcpy(void *dst, const void *src, size_t len)
 {
-	size_t	i;
-	char	*ptr;
+	unsigned int	i;
+	unsigned char	*ptr;
 
-	i = 0;
-	if (!str)
+	if (!dst && !src)
 		return (NULL);
-	if (start >= ft_strlen(str))
-		return (ft_strdup(""));
-	if (ft_strlen(str + start) < len)
-		len = ft_strlen(str + start);
-	ptr = (char *)malloc(len + 1);
-	if (ptr == NULL)
-		return (0);
-	while (i < len && (str + start)[i])
+	i = 0;
+	ptr = (unsigned char *)dst;
+	while (i < len)
 	{
-		ptr[i] = (str + start)[i];
+		*ptr = *((unsigned char *)src);
 		i++;
+		src++;
+		ptr++;
 	}
-	ptr[i] = '\0';
-	return (ptr);
+	return (dst);
 }

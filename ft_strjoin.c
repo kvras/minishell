@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
 static void	copy(char *ptr, const char *s)
 {
@@ -25,19 +25,19 @@ static void	copy(char *ptr, const char *s)
 	*ptr = '\0';
 }
 
-char	*ft_strjoin(const char *s1, const char *s2)
+char	*ft_strjoin(const char *s1, const char *s2, t_node **addresses)
 {
 	size_t	len;
 	char	*ptr;
 
 	if (!s1 && !s2)
-		return (ft_strdup(""));
+		return (ft_strdup("", addresses));
 	if (!s1)
-		return (ft_strdup(s2));
+		return (ft_strdup(s2, addresses));
 	if (!s2)
-		return (ft_strdup(s1));
+		return (ft_strdup(s1, addresses));
 	len = ft_strlen(s1) + ft_strlen(s2);
-	ptr = (char *)malloc(len + 1);
+	ptr = ft_malloc(len + 1, addresses);
 	if (ptr == NULL)
 		return (NULL);
 	ptr[0] = '\0';

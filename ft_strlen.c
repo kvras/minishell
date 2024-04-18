@@ -1,30 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_lstclear.c                                      :+:      :+:    :+:   */
+/*  ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/05 18:11:07 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/10 23:47:36 by miguiji          ###   ########.fr       */
+/*   Created: 2023/10/31 15:47:11 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/04 19:47:50 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-void	ft_lstclear(t_list **lst, void (*del)(void *))
+size_t	ft_strlen(const char *s)
 {
-	t_list	*tmp;
+	size_t	i;
 
-	if (lst != NULL && del != NULL)
-	{
-		while (*lst)
-		{
-			tmp = *lst;
-			*lst = (*lst)->next;
-			ft_lstdelone(tmp, del);
-		}
-	}
-	else
-		return ;
+	i = 0;
+	while (s && s[i])
+		i++;
+	return (i);
 }

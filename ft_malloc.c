@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:22 by miguiji           #+#    #+#             */
-/*   Updated: 2024/03/28 02:24:23 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:04:50 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,24 +20,26 @@ void    free_addresses(t_node *addresses)
     {
         tmp = addresses;
         addresses = addresses->next;
+		// printf("freeing internal ptr : %s\n", tmp->value);
         free(tmp->value);
+		// printf("freeing external node : %p\n", tmp);
         free(tmp);
     }
 }
 
-int ft_malloc(size_t size, void **ptr, t_node **addresses)
+void *ft_malloc(size_t size, t_node **addresses)
 {
-    *ptr = malloc(size);
-    if(!*ptr)
+	void *ptr = malloc(size);
+    if(!ptr)
     {
-        free_addresses(*addresses);
-        return 0;
+        // free_addresses(*addresses);
+        return NULL;
     }
     add_back(addresses, ft_alloc(ptr, NULL));
-    return 1;
+    return ptr;
 }
 
-t_node	*ft_alloc(void **value, char *type)
+t_node	*ft_alloc(void *value, char *type)
 {
 	t_node	*ptr;
 
@@ -45,7 +47,7 @@ t_node	*ft_alloc(void **value, char *type)
 	if (!ptr)
 		return (NULL);
 	ptr->type = type;
-	ptr->value = *value;
+	ptr->value = value;
 	ptr->next = NULL;
 	return (ptr);
 }
@@ -65,9 +67,9 @@ t_node	*ft_lstlast1(t_node *lst)
 void	add_back(t_node **lst, t_node *new)
 {
 	t_node	*ptr;
-
-	ptr = *lst;
-	if (!ptr)
+	if(!lst)
+		return ;
+	if (!*lst)
 	{
 		*lst = new;
 		return ;

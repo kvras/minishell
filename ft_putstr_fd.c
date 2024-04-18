@@ -1,27 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_strdup.c                                        :+:      :+:    :+:   */
+/*  ft_putstr_fd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/01 23:28:20 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/06 21:32:54 by miguiji          ###   ########.fr       */
+/*   Created: 2023/11/03 17:42:53 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 20:48:06 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strdup(const char *str)
+void	ft_putstr_fd(char *str, int fd)
 {
-	char	*ptr;
-	size_t	len;
-
-	len = ft_strlen(str);
-	ptr = (char *)malloc(len + 1);
-	if (ptr == NULL)
-		return (NULL);
-	ptr = (char *)ft_memcpy(ptr, str, len);
-	ptr[len] = '\0';
-	return (ptr);
+	if (fd < 0 || !str)
+		return ;
+	while (*str)
+	{
+		write(fd, str, 1);
+		str++;
+	}
 }

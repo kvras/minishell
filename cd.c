@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-int exec_cd(char *path)
+int exec_cd(char *path, t_node **addresses)
 {
     int     response;
     char    *cwd;
@@ -18,12 +18,9 @@ int exec_cd(char *path)
     else
     {
         cwd = getcwd(NULL, 0);
-        new_path = ft_strjoin(cwd, "/");
-        free(cwd);
-        cwd = ft_strjoin(new_path, path);
-        free(new_path);
+        new_path = ft_strjoin(cwd, "/", addresses);
+        cwd = ft_strjoin(new_path, path, addresses);
         response = chdir(cwd);
-        free(cwd);
         return response;
     }
     return 0;

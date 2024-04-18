@@ -1,28 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_lstsize.c                                       :+:      :+:    :+:   */
+/*  ft_strlcpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/05 16:02:29 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/06 21:02:36 by miguiji          ###   ########.fr       */
+/*   Created: 2023/10/31 21:19:25 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 21:42:08 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-int	ft_lstsize(t_list *lst)
+size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
 {
-	int	i;
+	size_t	i;
 
-	if (!lst)
-		return (0);
 	i = 0;
-	while (lst != NULL)
+	if (dstsize == 0)
+		return (ft_strlen(src));
+	while (i < dstsize - 1 && src[i])
 	{
+		dst[i] = src[i];
 		i++;
-		lst = lst->next;
 	}
-	return (i);
+	dst[i] = '\0';
+	return (ft_strlen(src));
 }

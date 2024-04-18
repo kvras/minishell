@@ -1,18 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_bzero.c                                         :+:      :+:    :+:   */
+/*  ft_memmove.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 18:06:05 by miguiji           #+#    #+#             */
-/*   Updated: 2023/10/31 18:09:17 by miguiji          ###   ########.fr       */
+/*   Created: 2023/11/01 13:28:03 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 20:48:49 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-void	ft_bzero(void *str, size_t len)
+void	*ft_memmove(void *dst, const void *src, size_t len)
 {
-	ft_memset(str, 0, len);
+	if (dst > src)
+	{
+		while (len)
+		{
+			((unsigned char *)dst)[len - 1] = ((unsigned char *)src)[len - 1];
+			len--;
+		}
+	}
+	else if (dst == src)
+		return (dst);
+	return (ft_memcpy(dst, src, len));
 }
