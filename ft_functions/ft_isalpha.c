@@ -1,32 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_memcpy.c                                        :+:      :+:    :+:   */
+/*  ft_isalpha.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 18:16:17 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/07 16:27:10 by miguiji          ###   ########.fr       */
+/*   Created: 2023/10/30 14:44:05 by miguiji           #+#    #+#             */
+/*   Updated: 2023/10/30 21:31:00 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
-void	*ft_memcpy(void *dst, const void *src, size_t len)
+static int	ft_islower(int c)
 {
-	unsigned int	i;
-	unsigned char	*ptr;
+	if (c >= 'a' && c <= 'z')
+		return (1);
+	return (0);
+}
 
-	if (!dst && !src)
-		return (NULL);
-	i = 0;
-	ptr = (unsigned char *)dst;
-	while (i < len)
-	{
-		*ptr = *((unsigned char *)src);
-		i++;
-		src++;
-		ptr++;
-	}
-	return (dst);
+static int	ft_isupper(int c)
+{
+	if (c >= 'A' && c <= 'Z')
+		return (1);
+	return (0);
+}
+
+int	ft_isalpha(int c)
+{
+	if (ft_isupper(c) || ft_islower(c))
+		return (1);
+	return (0);
 }

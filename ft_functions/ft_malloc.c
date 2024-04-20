@@ -6,11 +6,11 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:22 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/14 17:04:50 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/20 15:06:47 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 void    free_addresses(t_node *addresses)
 {

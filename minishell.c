@@ -190,60 +190,69 @@ int quotes_syntax(char *line)
 	}
 	return 0;
 }
-int is_builtin(t_command *commands, char ***env, t_node **addresses)
+int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 {
 	if(!commands->cmd)
 		return 0;
 	if(!ft_strncmp(commands->cmd[0], "echo", 4))
-		return(exec_echo(commands->cmd, *env), 1);
+		return(exec_echo(commands->cmd, env->env), 1);
 	else if(!ft_strncmp(commands->cmd[0], "pwd", 3))
 		return (exec_pwd(), 1);
 	else if(!ft_strncmp(commands->cmd[0], "cd", 2))
-		return (exec_cd(commands->cmd[1], addresses), 1);
+		return (exec_cd(commands->cmd[1], env, addresses), 1);      
 	else if(!ft_strncmp(commands->cmd[0], "env", 3))
-		return (exec_env(*env), 1);
+		return (exec_env(env->env), 1);
 	else if(!ft_strncmp(commands->cmd[0], "export", 6) && commands->cmd[1])
-		return (exec_export(commands->cmd[1], env,addresses), 1);
+		return (exec_export(commands->cmd[1], &env->env, &env->export, addresses), 1);
 	else if(!ft_strncmp(commands->cmd[0], "unset", 5))
 		return (exec_unset(commands->cmd[1], env,addresses),1);
 	else if(!ft_strncmp(commands->cmd[0], "$", 1))
-		return (printf("command not found: "), expand(commands->cmd[0], *env), 1);
+		return (printf("command not found: "), expand(commands->cmd[0], env->env), 1);
 	return 0;
+}
+static void	print_words(char **words)
+{
+	int	i;
+
+	i = 0;
+	while (words && words[i])
+	{
+		ft_putstr_fd(words[i++], 1);
+		if (words[i])
+			ft_putstr_fd(" ", 1);
+	}
 }
 void exec_echo(char **cmd, char **env)
 {
-	if(!ft_strncmp(cmd[1], "-n", 2))
+	int i;
+	int j;
+	int flag;
+
+	i = 0;
+	flag = 0;
+	while (cmd && cmd[++i])
 	{
-		int i;
-		i = 1;
-		while(cmd[i++])
+		if(cmd[i][0] == '-')
 		{
-			if(!expand(cmd[i], env))
-				ft_putstr_fd(cmd[i], 1);
-			if(cmd[i + 1])
-				ft_putstr_fd(" ", 1);
+			j = 0;
+			while(cmd[i][++j] == 'n');
+			if(cmd[i][j] != '\0')
+				break ;
+			else
+				flag = 1;
 		}
+		else
+			break ;
 	}
+	if (flag == 1)
+		print_words(&cmd[i]);
 	else
 	{
-		int i;
-
-		i = 0;
-		if(!cmd[1])
-		{
-			ft_putstr_fd("\n", 1);
-			return ;
-		}
-		while(cmd[i++])
-		{
-			if(!expand(cmd[i], env))
-				ft_putstr_fd(cmd[i], 1);
-			if(cmd[i + 1])
-				ft_putstr_fd(" ", 1);
-		}
+		print_words(&cmd[i]);
 		ft_putstr_fd("\n", 1);
 	}
 }
+
 void f(void)
 {
 	system("leaks minishell");
@@ -253,7 +262,9 @@ int main(int argc, char **argv, char **env)
 	char    *line = NULL;
 	t_node  *tokens = NULL;
     t_node  *addresses = NULL;
-	char **env_lst = get_env(env);
+	t_env   enviremont;
+	enviremont.env = get_env(env);
+	enviremont.export = get_env(env);
 	run_signals();
 	atexit(f);
 	while(1)
@@ -270,7 +281,7 @@ int main(int argc, char **argv, char **env)
 		if(line[0] != '\0')
 			add_history(line);
 		parse_line(line, &tokens, &addresses, 0);
-		execute_commands(set_newlist(&tokens, &addresses), &env_lst, &addresses);
+		execute_commands(set_newlist(&tokens, &addresses), &enviremont, &addresses);
 		tokens = NULL;
 		free(line);
 		line = NULL;

@@ -1,29 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_strlcpy.c                                       :+:      :+:    :+:   */
+/*  ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 21:19:25 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/06 21:42:08 by miguiji          ###   ########.fr       */
+/*   Created: 2023/10/31 15:47:11 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/04 19:47:50 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
+size_t	ft_strlen(const char *s)
 {
 	size_t	i;
 
 	i = 0;
-	if (dstsize == 0)
-		return (ft_strlen(src));
-	while (i < dstsize - 1 && src[i])
-	{
-		dst[i] = src[i];
+	while (s && s[i])
 		i++;
-	}
-	dst[i] = '\0';
-	return (ft_strlen(src));
+	return (i);
 }

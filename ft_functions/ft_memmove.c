@@ -1,34 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_isalpha.c                                       :+:      :+:    :+:   */
+/*  ft_memmove.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/30 14:44:05 by miguiji           #+#    #+#             */
-/*   Updated: 2023/10/30 21:31:00 by miguiji          ###   ########.fr       */
+/*   Created: 2023/11/01 13:28:03 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 20:48:49 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
-static int	ft_islower(int c)
+void	*ft_memmove(void *dst, const void *src, size_t len)
 {
-	if (c >= 'a' && c <= 'z')
-		return (1);
-	return (0);
-}
-
-static int	ft_isupper(int c)
-{
-	if (c >= 'A' && c <= 'Z')
-		return (1);
-	return (0);
-}
-
-int	ft_isalpha(int c)
-{
-	if (ft_isupper(c) || ft_islower(c))
-		return (1);
-	return (0);
+	if (dst > src)
+	{
+		while (len)
+		{
+			((unsigned char *)dst)[len - 1] = ((unsigned char *)src)[len - 1];
+			len--;
+		}
+	}
+	else if (dst == src)
+		return (dst);
+	return (ft_memcpy(dst, src, len));
 }

@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/17 10:07:53 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/20 15:01:08 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,17 +183,18 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag, t_node **addr
     }
 }
 
-void execute_commands(t_command *cmd, char ***env, t_node **addresses)
+void execute_commands(t_command *cmd, t_env *env, t_node **addresses)
 {
     t_command *tmp;
     char *path;
     tmp= cmd;
-    path = get_environment(*env, "PATH=");
+    path = get_environment(env->env, "PATH=");
     while(cmd) 
     {
-        cmd->cmd = ft_pathname(path, cmd->cmd, *env, addresses);
-        make_process(cmd, *env);
-        cmd = cmd->next;
+        is_builtin(cmd, env, addresses);
+            // cmd->cmd = ft_pathname(path, cmd->cmd, *env, addresses);
+        // make_process(cmd, *env);
+       cmd = cmd->next;
     }
     while(wait(NULL)>0);
 }
@@ -290,7 +291,7 @@ char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses)
     if(!cmdargs || !*cmdargs)
         return ( NULL);
 	i = -1;
-    if(cmdargs[0][0] == '/')
+    if(cmdargs[0][0] == '/' || cmdargs[0][0] == '.')
         return (cmdargs);
 	while (paths && paths[++i])
 	{

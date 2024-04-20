@@ -1,28 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_memmove.c                                       :+:      :+:    :+:   */
+/*  ft_putstr_fd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/01 13:28:03 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/06 20:48:49 by miguiji          ###   ########.fr       */
+/*   Created: 2023/11/03 17:42:53 by miguiji           #+#    #+#             */
+/*   Updated: 2023/11/06 20:48:06 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
-void	*ft_memmove(void *dst, const void *src, size_t len)
+void	ft_putstr_fd(char *str, int fd)
 {
-	if (dst > src)
+	if (fd < 0 || !str)
+		return ;
+	while (*str)
 	{
-		while (len)
-		{
-			((unsigned char *)dst)[len - 1] = ((unsigned char *)src)[len - 1];
-			len--;
-		}
+		write(fd, str, 1);
+		str++;
 	}
-	else if (dst == src)
-		return (dst);
-	return (ft_memcpy(dst, src, len));
 }

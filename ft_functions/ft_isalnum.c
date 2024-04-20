@@ -1,23 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*  ft_strlen.c                                        :+:      :+:    :+:   */
+/*   ft_isalnum.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miguiji <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 15:47:11 by miguiji           #+#    #+#             */
-/*   Updated: 2023/11/04 19:47:50 by miguiji          ###   ########.fr       */
+/*   Created: 2024/04/20 16:12:03 by miguiji           #+#    #+#             */
+/*   Updated: 2024/04/20 16:14:18 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
-size_t	ft_strlen(const char *s)
+static int ft_isdigit(int c)
 {
-	size_t	i;
+    if (c >= '0' && c <= '9')
+        return (1);
+    return (0);
+}
 
-	i = 0;
-	while (s && s[i])
-		i++;
-	return (i);
+
+int ft_isalnum(int c)
+{
+    if (ft_isalpha(c) || ft_isdigit(c))
+        return (1);
+    return (0);
 }
