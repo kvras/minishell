@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:09 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/20 15:09:58 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/22 15:52:19 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,19 +36,19 @@ char **get_env(char **env)
     return (array);
 }
 
-int exec_env(char **env)
-{
-    int i;
+// int exec_env(char **env)
+// {
+//     int i;
 
-    i = 0;
-    while(env && env[i])
-    {
-        ft_putstr_fd(env[i], 1);
-        ft_putstr_fd("\n", 1);
-        i++;
-    }
-    return 0;
-}
+//     i = 0;
+//     while(env && env[i])
+//     {
+//         ft_putstr_fd(env[i], 1);
+//         ft_putstr_fd("\n", 1);
+//         i++;
+//     }
+//     return 0;
+// }
 
 // hadi bach n unsetiw wa7ed lvar
 int get_equal(char *s)
@@ -59,6 +59,19 @@ int get_equal(char *s)
     while(s && s[i])
     {
         if(s[i] == '=')
+            return i;
+        i++;
+    }
+    return 0;
+}
+int get_dollar(char *s)
+{
+    int i;
+
+    i = 0;
+    while(s && s[i])
+    {
+        if(s[i] == '$')
             return i;
         i++;
     }
@@ -77,23 +90,40 @@ int check_char(char *s,char c)
     }
     return (0);
 }
-int expand(char *var, char **env)
-{
-    int i;
 
+// function that expands the variables and modify the char **var remplace $EXEMPLE by its value
+// if the variable is not found in the env it s place in the string will be left empy
+
+void expand(t_node *node, t_env *env, t_node **addresses)
+{
+    char *response = NULL;
+    char *var = NULL;;
+    int i;
+    int x;
+
+    x = 0;
     i = 0;
-    if (!var || var[0] != '$' || !var[1])
-        return (0);
-    while (env && env[i])
+    if(!node)
+        return ;
+    if(ft_strnstr(node->value, "$", ft_strlen(node->value)))
     {
-        if (!ft_strncmp(env[i], var + 1, get_equal(env[i])))
+        while(node->value && ((char *)node->value)[i])
         {
-            ft_putstr_fd(env[i] + get_equal(env[i]) + 1, 1);
-            ft_putstr_fd("\n", 1);
-            return (1);
+            while (node->value && ((char *)node->value)[i] && ((char *)node->value)[i]!= '$')
+                i++;
+            response = ft_strjoin(response, ft_substr(node->value, x, x -i++, addresses), addresses);
+            x = i;
+            while(node->value && ((char *)node->value)[i] && ((char *)node->value)[i]!= '$')
+                i++;
+            var = ft_strjoin(ft_substr(node->value, x, i - x, addresses), "=", addresses);
+            response = ft_strjoin(response, get_environment(env->env, var), addresses);
+            x = i;
         }
-        i++;
+        node->value = response;
+        // puts("--------------------------------");
+        // printf("value = %s\n", (char *)node->value);
+        // puts("--------------------------------");
     }
-    ft_putstr_fd("\n", 1);
-    return 1;
+    return ;
 }
+

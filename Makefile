@@ -3,26 +3,8 @@
 # CFLAGS =
  SRC = minishell.c ft_functions/ft_malloc.c node.c pwd.c cd.c env.c ayoub.c signals.c ft_functions/ft_strjoin.c ft_functions/ft_strncmp.c \
        ft_functions/ft_split.c ft_functions/ft_strlen.c ft_functions/ft_strdup.c ft_functions/ft_memcpy.c ft_functions/ft_memmove.c \
-	   ft_functions/ft_putstr_fd.c ft_functions/ft_strlcpy.c ft_functions/ft_strnstr.c ft_functions/ft_isalpha.c ft_functions/ft_isalnum.c export.c
-# LINKREADLINELIB = $(shell brew --prefix readline)/lib
-# LINKREADLINELIB1 = $(shell brew --prefix readline)/include
-# OBJ = $(SRC:.c=.o)
-# all : $(NAME)
-# %.o : %.c minishell.h -I $(LINKREADLINELIB1)
-# 	$(CC) -c $< -g -o $@  $(CFLAGS)
-# $(NAME) : $(OBJ)
-# 	(cd libft && make)
-# 	$(CC) $(SRC) libft/libft.a  -L $(LINKREADLINELIB) -lreadline  -g -o minishell
-
-# clean : 
-# 	(cd libft && make clean)
-# 	rm -f $(OBJ)
-
-# fclean : clean
-# 	(cd libft && make fclean)
-# 	rm -f $(NAME)
-
-# re : fclean all
+	   ft_functions/ft_putstr_fd.c ft_functions/ft_strlcpy.c ft_functions/ft_strnstr.c ft_functions/ft_isalpha.c ft_functions/ft_isalnum.c \
+	   export.c ft_functions/ft_substr.c
 
 NAME = minishell
 CC = cc

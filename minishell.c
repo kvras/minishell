@@ -17,7 +17,7 @@ int check_pipes(char *line)
 
 int special_char(char c)
 {
-	char *special = " $<>&|;\'\"\t";
+	char *special = " <>&|;\'\"\t";
 	int i = 0;
 	while(special[i])
 	{
@@ -53,7 +53,6 @@ void ft_expand(char *line, t_node **commands, int *offset, t_node **addresses)
 	}
 	tmp[j] = '\0';
 	ft_lstadd_back1(commands, ft_lstnew1(tmp, "var", addresses));
-	// free(tmp);
 	*offset = *offset + i - 1;
 }
 
@@ -145,8 +144,8 @@ void parse_line(char *line, t_node **commands, t_node **addresses, int i)
 	{
 		if(line[i] == ' ' || line[i] == '\t')
 			ft_lstadd_back1(commands, ft_lstnew1(" ", "space", addresses));
-		else if(line[i] == '$')
-			ft_expand(&line[i], commands, &i, addresses);
+		// else if(line[i] == '$')
+		// 	ft_expand(&line[i], commands, &i, addresses);
 		else if(line[i] == '<' && line[i + 1] == '<' && ++i)
 			ft_lstadd_back1(commands, ft_lstnew1("<<", "here_doc", addresses));
 		else if(line[i] == '>' && line[i + 1] == '>' && ++i)
@@ -192,22 +191,27 @@ int quotes_syntax(char *line)
 }
 int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 {
+	t_node *add = NULL;
 	if(!commands->cmd)
 		return 0;
-	if(!ft_strncmp(commands->cmd[0], "echo", 4))
+	if(!ft_strcmp(commands->cmd[0], "echo"))
 		return(exec_echo(commands->cmd, env->env), 1);
-	else if(!ft_strncmp(commands->cmd[0], "pwd", 3))
+	else if(!ft_strcmp(commands->cmd[0], "pwd"))
 		return (exec_pwd(), 1);
-	else if(!ft_strncmp(commands->cmd[0], "cd", 2))
-		return (exec_cd(commands->cmd[1], env, addresses), 1);      
-	else if(!ft_strncmp(commands->cmd[0], "env", 3))
+	else if(!ft_strcmp(commands->cmd[0], "cd"))
+		return (exec_cd(commands->cmd[1], env, &add), 1);      
+	else if(!ft_strcmp(commands->cmd[0], "env"))
 		return (exec_env(env->env), 1);
-	else if(!ft_strncmp(commands->cmd[0], "export", 6) && commands->cmd[1])
-		return (exec_export(commands->cmd[1], &env->env, &env->export, addresses), 1);
-	else if(!ft_strncmp(commands->cmd[0], "unset", 5))
-		return (exec_unset(commands->cmd[1], env,addresses),1);
-	else if(!ft_strncmp(commands->cmd[0], "$", 1))
-		return (printf("command not found: "), expand(commands->cmd[0], env->env), 1);
+	else if(!ft_strcmp(commands->cmd[0], "export"))
+		return (exec_export(commands->cmd[1], &env->env, &env->export, &add), 1);
+	else if(!ft_strcmp(commands->cmd[0], "unset"))
+	{
+		exec_unset(commands->cmd[1], &env->env, &add);
+		exec_unset(commands->cmd[1], &env->export, &add);
+		return (1);
+	}
+	// else if(!ft_strcmp(commands->cmd[0], "$"))
+	// 	return (expand(&commands->cmd[0], env->env), 1);
 	return 0;
 }
 static void	print_words(char **words)
@@ -262,11 +266,10 @@ int main(int argc, char **argv, char **env)
 	char    *line = NULL;
 	t_node  *tokens = NULL;
     t_node  *addresses = NULL;
-	t_env   enviremont;
-	enviremont.env = get_env(env);
-	enviremont.export = get_env(env);
+	t_env   envir;
+	envir.env = get_env(env);
+	envir.export = get_env(env);
 	run_signals();
-	atexit(f);
 	while(1)
 	{
 		line = readline("minishell$ ");
@@ -281,7 +284,7 @@ int main(int argc, char **argv, char **env)
 		if(line[0] != '\0')
 			add_history(line);
 		parse_line(line, &tokens, &addresses, 0);
-		execute_commands(set_newlist(&tokens, &addresses), &enviremont, &addresses);
+		execute_commands(set_newlist(&tokens, &envir,&addresses), &envir, &addresses);
 		tokens = NULL;
 		free(line);
 		line = NULL;

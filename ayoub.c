@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/20 15:01:08 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/22 15:50:53 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ void display_cmd(t_command *node)
         node = node->next;
     }
 }
-t_command *set_newlist(t_node **node, t_node **addresses)
+t_command *set_newlist(t_node **node, t_env *env, t_node **addresses)
 {
     t_command *cmd = NULL;
     char *s = NULL;
@@ -84,8 +84,11 @@ t_command *set_newlist(t_node **node, t_node **addresses)
             continue ;
         if(*node)
         {
+            // printf("%s\n", (char *)((*node)->value));
+            expand(*node, env, addresses);
+            // printf("%s\n", (char *)((*node)->value));
             s = ft_strjoin(s, (*node)->value, addresses);
-            (*node) = (*node)->next;
+            *node = (*node)->next;
         }
     }
     array = ft_array(array, s, addresses);
@@ -168,6 +171,11 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag, t_node **addr
         if (!ft_strncmp((*node)->type, "rd_in", 5))
             flag = 1;
         *node = (*node)->next;
+        if (!*node)
+        {
+            write(1, "syntax error near unexpected token `newline'\n", 45);
+            return ;
+        }
         while (!ft_strncmp((*node)->type, "space", 5))
             *node = (*node)->next;
         if (!ft_strncmp((*node)->type, "word", 4) || !ft_strncmp((*node)->type, "quote", 5)) 
@@ -183,26 +191,40 @@ void handle_here_doc_or_rd_in(t_node **node, int *fd_in, int flag, t_node **addr
     }
 }
 
+// builtin_key is a function that checks if the command is a builtin command 
+int builtin_key(t_command *cmd)
+{
+    if(!ft_strcmp(cmd->cmd[0], "cd") || !ft_strcmp(cmd->cmd[0], "echo") || !ft_strcmp(cmd->cmd[0], "pwd") ||
+        !ft_strcmp(cmd->cmd[0], "export") || !ft_strcmp(cmd->cmd[0], "unset") || !ft_strcmp(cmd->cmd[0], "env") ||
+         !ft_strcmp(cmd->cmd[0], "exit") || cmd->cmd[0][0] == '$')
+        return 1;
+    return 0;
+}
+
 void execute_commands(t_command *cmd, t_env *env, t_node **addresses)
 {
     t_command *tmp;
     char *path;
+    int i = 0;
     tmp= cmd;
     path = get_environment(env->env, "PATH=");
     while(cmd) 
     {
-        is_builtin(cmd, env, addresses);
-            // cmd->cmd = ft_pathname(path, cmd->cmd, *env, addresses);
-        // make_process(cmd, *env);
-       cmd = cmd->next;
+        if(!builtin_key(cmd))
+            cmd->cmd = ft_pathname(path, cmd->cmd, env->env, addresses);
+        if(i == 0 && !cmd->next && is_builtin(cmd, env, addresses))
+            return ;
+        make_process(cmd, env, addresses);
+        cmd = cmd->next;
+        i++;
     }
     while(wait(NULL)>0);
 }
-int make_process(t_command *command, char **env)
+int make_process(t_command *command, t_env *env, t_node **addresses)
 {
     int fd[2];
     int pid;
-    int response = 0;
+    int response = -1;
     if(!command->cmd)
         return 0;
     if(command->next)
@@ -228,7 +250,17 @@ int make_process(t_command *command, char **env)
             dup2(command->output, 1);
             close(command->output);
         }
-        response = execve(command->cmd[0], command->cmd,env);
+        if(!is_builtin(command, env, addresses))
+        {
+            response = execve(command->cmd[0], command->cmd,env->env);
+            if (response == -1)
+            {
+                printf("minishell: %s: %s\n", command->cmd[0], strerror(errno));
+                exit(127);
+            }
+        }
+        if(response == -1)
+            exit(127);
     }
     else
     {
@@ -288,12 +320,14 @@ char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses)
     char    **paths;
 
     paths = ft_split(p, ':', addresses);
+    if(!paths)
+        return (cmdargs);
     if(!cmdargs || !*cmdargs)
         return ( NULL);
 	i = -1;
     if(cmdargs[0][0] == '/' || cmdargs[0][0] == '.')
         return (cmdargs);
-	while (paths && paths[++i])
+	while (paths && paths[++i] && cmdargs[0][0])
 	{
 		cmd = ft_join_free(paths[i], "/", addresses);
 		cmd = ft_join_free(cmd, cmdargs[0], addresses);
@@ -303,8 +337,7 @@ char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses)
             return (cmdargs);
         }
 	}
-    printf("command not found\n");
-	return (NULL);
+	return (cmdargs);
 }
 char	*ft_join_free(char *s, const char *buf, t_node **addresses)
 {
