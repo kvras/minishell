@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:09 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/22 15:52:19 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/24 23:30:30 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,33 +97,34 @@ int check_char(char *s,char c)
 void expand(t_node *node, t_env *env, t_node **addresses)
 {
     char *response = NULL;
-    char *var = NULL;;
+    char *var;
     int i;
     int x;
 
     x = 0;
     i = 0;
-    if(!node)
+    if(!node || !ft_strcmp(node->type, "s_quote"))
         return ;
-    if(ft_strnstr(node->value, "$", ft_strlen(node->value)))
+    while(node->value && ((char *)node->value)[i])
     {
-        while(node->value && ((char *)node->value)[i])
+        while(((char *)node->value)[i] != '\0')
         {
-            while (node->value && ((char *)node->value)[i] && ((char *)node->value)[i]!= '$')
-                i++;
-            response = ft_strjoin(response, ft_substr(node->value, x, x -i++, addresses), addresses);
-            x = i;
-            while(node->value && ((char *)node->value)[i] && ((char *)node->value)[i]!= '$')
-                i++;
-            var = ft_strjoin(ft_substr(node->value, x, i - x, addresses), "=", addresses);
-            response = ft_strjoin(response, get_environment(env->env, var), addresses);
-            x = i;
+            if (((char *)node->value)[i] == '$' && ft_isalnum(((char *)node->value)[i + 1]))
+                break ;
+            i++;
         }
-        node->value = response;
-        // puts("--------------------------------");
-        // printf("value = %s\n", (char *)node->value);
-        // puts("--------------------------------");
+        response = ft_strjoin(response, ft_substr(node->value, x, i++, addresses), addresses);
+        x = i;
+        while(((char *)node->value)[i] != '\0' && ft_isalnum(((char *)node->value)[i]))
+            i++;
+        var = ft_strjoin(ft_substr(node->value, x, i - x, addresses), "=", addresses);
+        response = ft_strjoin(response, get_environment(env->env, var), addresses);
+        x = i;
     }
+    node->value = response;
+    // puts("--------------------------------");
+    // printf("value = %s\n", (char *)node->value);
+    // puts("--------------------------------");
     return ;
 }
 

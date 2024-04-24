@@ -1,0 +1,7 @@
+> "ls"
+
+>> signals
+
+cat * 2
+
+ls > $VAR

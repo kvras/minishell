@@ -6,7 +6,7 @@
 /*   By: miguiji <miguiji@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
-/*   Updated: 2024/04/22 15:50:53 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/04/24 23:21:26 by miguiji          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,9 +84,7 @@ t_command *set_newlist(t_node **node, t_env *env, t_node **addresses)
             continue ;
         if(*node)
         {
-            // printf("%s\n", (char *)((*node)->value));
             expand(*node, env, addresses);
-            // printf("%s\n", (char *)((*node)->value));
             s = ft_strjoin(s, (*node)->value, addresses);
             *node = (*node)->next;
         }
@@ -250,7 +248,7 @@ int make_process(t_command *command, t_env *env, t_node **addresses)
             dup2(command->output, 1);
             close(command->output);
         }
-        if(!is_builtin(command, env, addresses))
+        if(!is_builtin(command, env, addresses) && command->cmd[0][0] != '\0')
         {
             response = execve(command->cmd[0], command->cmd,env->env);
             if (response == -1)

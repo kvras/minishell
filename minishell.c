@@ -89,10 +89,9 @@ void ft_quotes(char *line, t_node **commands, int *offset, t_node **addresses)
 	int i;
 	int j;
 	char *tmp;
-	tmp = NULL;
-	i = 0;
+
+	i = 1;
 	j = 0;
-	++i;
 	while(line[i])
 	{
 		if(line[0] == line[i])
@@ -108,8 +107,10 @@ void ft_quotes(char *line, t_node **commands, int *offset, t_node **addresses)
 		j++;
 	}
 	tmp[j] = '\0';
-	ft_lstadd_back1(commands, ft_lstnew1(tmp, "quote", addresses));
-	// free(tmp);
+	if (line[0] == '\'')
+		ft_lstadd_back1(commands, ft_lstnew1(tmp, "s_quote", addresses));
+	else
+		ft_lstadd_back1(commands, ft_lstnew1(tmp, "d_quote", addresses));
 	*offset = *offset + i;
 }
 int check_quote(char *line, char c,	int *offset)
@@ -199,15 +200,15 @@ int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 	else if(!ft_strcmp(commands->cmd[0], "pwd"))
 		return (exec_pwd(), 1);
 	else if(!ft_strcmp(commands->cmd[0], "cd"))
-		return (exec_cd(commands->cmd[1], env, &add), 1);      
+		return (exec_cd(commands->cmd[1], env, addresses), 1);      
 	else if(!ft_strcmp(commands->cmd[0], "env"))
 		return (exec_env(env->env), 1);
 	else if(!ft_strcmp(commands->cmd[0], "export"))
-		return (exec_export(commands->cmd[1], &env->env, &env->export, &add), 1);
+		return (exec_export(commands->cmd[1], &env->env, &env->export, addresses), 1);
 	else if(!ft_strcmp(commands->cmd[0], "unset"))
 	{
-		exec_unset(commands->cmd[1], &env->env, &add);
-		exec_unset(commands->cmd[1], &env->export, &add);
+		exec_unset(commands->cmd[1], &env->env, addresses);
+		exec_unset(commands->cmd[1], &env->export, addresses);
 		return (1);
 	}
 	// else if(!ft_strcmp(commands->cmd[0], "$"))
@@ -281,14 +282,14 @@ int main(int argc, char **argv, char **env)
 			line = NULL;
 			continue;
 		}
-		if(line[0] != '\0')
+		if(line[0] != '\0' && ((line[0] < 9 || line[0] > 13) && line[0] != 32))
 			add_history(line);
 		parse_line(line, &tokens, &addresses, 0);
 		execute_commands(set_newlist(&tokens, &envir,&addresses), &envir, &addresses);
 		tokens = NULL;
 		free(line);
 		line = NULL;
-		free_addresses(addresses);
+		// free_addresses(addresses);
 		addresses = NULL;
     }
 	return 0;
