@@ -1,28 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isalnum.c                                       :+:      :+:    :+:   */
+/*   ft_putendl_fd.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aben-cha <aben-cha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/20 16:12:03 by miguiji           #+#    #+#             */
-/*   Updated: 2024/05/03 18:05:41 by aben-cha         ###   ########.fr       */
+/*   Created: 2023/11/09 22:06:33 by aben-cha          #+#    #+#             */
+/*   Updated: 2024/05/01 16:16:23 by aben-cha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int ft_isdigit(int c)
+void	ft_putendl_fd(char *s, int fd)
 {
-    if (c >= '0' && c <= '9')
-        return (1);
-    return (0);
-}
-
-
-int ft_isalnum(int c)
-{
-    if (ft_isalpha(c) || ft_isdigit(c))
-        return (1);
-    return (0);
+	if (fd >= 0)
+	{
+		ft_putstr_fd(s, fd);
+		ft_putchar_fd('\n', fd);
+	}
+	else
+		return ;
 }

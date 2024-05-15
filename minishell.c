@@ -178,11 +178,13 @@ int quotes_syntax(char *line)
 		if(line[i] == '\'' && check_quote(&line[i], '\'', &i) == 0)
 		{
 			printf("quote error\n");
+			exit_status(127);
 			return 1;
 		}
 		if(line[i] == '\"' && check_quote(&line[i], '\"', &i) == 0)
 		{
 			printf("quote error\n");
+			exit_status(127);
 			return 1;
 		}
 		if(line[i])
@@ -192,11 +194,10 @@ int quotes_syntax(char *line)
 }
 int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 {
-	t_node *add = NULL;
-	if(!commands->cmd)
+	if (!commands->cmd)
 		return 0;
 	if(!ft_strcmp(commands->cmd[0], "echo"))
-		return(exec_echo(commands->cmd, env->env), 1);
+		return(exec_echo(commands->cmd, env->env, addresses), 1);
 	else if(!ft_strcmp(commands->cmd[0], "pwd"))
 		return (exec_pwd(), 1);
 	else if(!ft_strcmp(commands->cmd[0], "cd"))
@@ -204,93 +205,83 @@ int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 	else if(!ft_strcmp(commands->cmd[0], "env"))
 		return (exec_env(env->env), 1);
 	else if(!ft_strcmp(commands->cmd[0], "export"))
-		return (exec_export(commands->cmd[1], &env->env, &env->export, addresses), 1);
+		return (exec_export(&commands->cmd[1], &env->env, &env->export, addresses), 1);
 	else if(!ft_strcmp(commands->cmd[0], "unset"))
 	{
+		if (commands->cmd[1] && (!check_error(commands->cmd[1], 0) || commands->cmd[1][get_equal(commands->cmd[1])] == '='))
+    	{
+        	printf("minishell: unset: `%s': not a valid identifier\n", commands->cmd[1]);
+			// ft_putendl_fd("minishell: unset: `': not a valid identifier", 2);
+			exit_status(1);
+        	return (1);
+   		}
 		exec_unset(commands->cmd[1], &env->env, addresses);
 		exec_unset(commands->cmd[1], &env->export, addresses);
 		return (1);
 	}
-	// else if(!ft_strcmp(commands->cmd[0], "$"))
-	// 	return (expand(&commands->cmd[0], env->env), 1);
+	else if(!ft_strcmp(commands->cmd[0], "exit"))
+		return (exec_exit(commands->cmd), 1);
 	return 0;
-}
-static void	print_words(char **words)
-{
-	int	i;
-
-	i = 0;
-	while (words && words[i])
-	{
-		ft_putstr_fd(words[i++], 1);
-		if (words[i])
-			ft_putstr_fd(" ", 1);
-	}
-}
-void exec_echo(char **cmd, char **env)
-{
-	int i;
-	int j;
-	int flag;
-
-	i = 0;
-	flag = 0;
-	while (cmd && cmd[++i])
-	{
-		if(cmd[i][0] == '-')
-		{
-			j = 0;
-			while(cmd[i][++j] == 'n');
-			if(cmd[i][j] != '\0')
-				break ;
-			else
-				flag = 1;
-		}
-		else
-			break ;
-	}
-	if (flag == 1)
-		print_words(&cmd[i]);
-	else
-	{
-		print_words(&cmd[i]);
-		ft_putstr_fd("\n", 1);
-	}
 }
 
 void f(void)
 {
 	system("leaks minishell");
 }
+void free_arr(char **arr)
+{
+	int i;
+
+	i = 0;
+	while(arr && arr[i])
+	{
+		free(arr[i]);
+		i++;
+	}
+	free(arr);
+}
+
 int main(int argc, char **argv, char **env)
 {
-	char    *line = NULL;
-	t_node  *tokens = NULL;
-    t_node  *addresses = NULL;
+	(void)argc;
+	(void)argv;
+	char    *line;
+	t_node  *tokens;
+    t_node  *addresses;
 	t_env   envir;
+	struct termios original_termios;
+	// atexit(f);
+	line = NULL;
+	tokens = NULL;
+	addresses = NULL;
 	envir.env = get_env(env);
 	envir.export = get_env(env);
-	run_signals();
-	while(1)
+	get_terminal_attr(&original_termios);
+	while (1)
 	{
+		run_signals(1);
 		line = readline("minishell$ ");
-		if(!line || !strncmp(line, "exit", 4))
-			return (free(line),	free_addresses(addresses), rl_clear_history(), ctr_d(),0);
+		if(!line)
+			return (free(line),	free_arr(envir.env), free_arr(envir.export), rl_clear_history(), ctr_d(), 0);
 		if(quotes_syntax(line))
 		{
 			free(line);
 			line = NULL;
 			continue;
 		}
-		if(line[0] != '\0' && ((line[0] < 9 || line[0] > 13) && line[0] != 32))
+		if (line[0] != '\0' && ((line[0] < 9 || line[0] > 13) && line[0] != 32))
 			add_history(line);
 		parse_line(line, &tokens, &addresses, 0);
-		execute_commands(set_newlist(&tokens, &envir,&addresses), &envir, &addresses);
+		execute_commands(set_newlist(&tokens, &envir, &addresses), &envir, &addresses);
 		tokens = NULL;
 		free(line);
 		line = NULL;
-		// free_addresses(addresses);
+		restore_terminal_attributes(&original_termios);
+		free_addresses(addresses);
 		addresses = NULL;
     }
+	// ft_minishell(tokens, envir, addresses, &original_termios);
 	return 0;
 }
+
+
