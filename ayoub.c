@@ -6,7 +6,7 @@
 /*   By: aben-cha <aben-cha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:23:56 by miguiji           #+#    #+#             */
-/*   Updated: 2024/05/14 23:18:01 by aben-cha         ###   ########.fr       */
+/*   Updated: 2024/05/15 18:00:26 by aben-cha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,23 +222,23 @@ int  handle_append_or_red_out(t_node **node, int *fd_out, int flag)
     return (0);
 }
 
-int open_file1(t_node **node, int *fd_in, int flag, char **env, t_node **addresses)
+int open_file1(t_node **node, t_fd *fd, char **env, t_node **addresses)
 {
     t_node *tmp;
     
-    if (flag)
-        *fd_in = open((*node)->value, O_RDONLY, 0644);
+    if (fd->flag)
+        fd->in = open((*node)->value, O_RDONLY, 0644);
     else
-        *fd_in = ft_herdoc((*node)->value, env, addresses);
-    if (*fd_in == -1)
+        fd->in = ft_herdoc(*node, env, addresses);
+    if (fd->in == -1)
         ft_putstr_fd("No such file or directory\n", 2);
     tmp = (*node)->next;
     while (tmp && !ft_strcmp(tmp->type, "space"))
         tmp = tmp->next;
     if (tmp && !ft_strcmp(tmp->type, "pipe"))
     {
-        *fd_in = open("k", O_CREAT | O_RDWR | O_TRUNC, 0644);
-        if(*fd_in == -1 || unlink("k") == -1)
+        fd->in = open("k", O_CREAT | O_RDWR | O_TRUNC, 0644);
+        if(fd->in == -1 || unlink("k") == -1)
             return (1);
     }
             *node = (*node) -> next;
@@ -249,7 +249,6 @@ int handle_here_doc_or_rd_in(t_node **node, t_fd *fd, char **env, t_node **addre
 {
     int	flag;
     int	*fd_in;
-    flag = fd->flag;
     fd_in = &fd->in;
 
 	if (!*node)
@@ -257,9 +256,9 @@ int handle_here_doc_or_rd_in(t_node **node, t_fd *fd, char **env, t_node **addre
     if (!ft_strncmp((*node)->type, "here_doc", 8)
 		|| !ft_strncmp((*node)->type, "rd_in", 5)) 
     {
-        flag = 0;
+        fd->flag = 0;
         if (!ft_strncmp((*node)->type, "rd_in", 5))
-            flag = 1;
+            fd->flag = 1;
         *node = (*node)->next;
         while (*node && !ft_strncmp((*node)->type, "space", 5))
             *node = (*node)->next;
@@ -267,7 +266,7 @@ int handle_here_doc_or_rd_in(t_node **node, t_fd *fd, char **env, t_node **addre
             return (error_redirection(0), 1);
         if (*node && (!ft_strncmp((*node)->type, "word", 4)
 			|| !ft_strncmp((*node)->type + 2, "quote", 5)))
-            return (open_file1(node, fd_in, flag, env, addresses), 0);
+            return (open_file1(node, fd, env, addresses), 0);
         else
             return (error_redirection(2), 1);
     }
@@ -441,7 +440,7 @@ void signal_here_doc(int sig)
         exit(1);
 }
 
-void  ft_read_input(char *s, t_heredoc *heredoc, char **env, t_node **addresses)
+void  ft_read_input(t_node *node, t_heredoc *heredoc, char **env, t_node **addresses)
 {
     char *line;
     char *tmp = NULL;
@@ -452,21 +451,23 @@ void  ft_read_input(char *s, t_heredoc *heredoc, char **env, t_node **addresses)
         line = readline("> ");
         if (!line)
             break ;
-        if(!ft_strcmp(line, s))
+        if(!ft_strcmp(line, node->value))
         {
             free(line);
             break;
         }
-        tmp = expand_heredoc(line, env, addresses);
+        if (ft_strcmp("quote", node->type + 2))
+            tmp = expand_heredoc(line, env, addresses);
+        else
+            tmp = line;
         tmp = ft_strjoin(tmp, "\n", addresses);
         write(heredoc->fd_write, tmp, ft_strlen(tmp));
-        free(tmp);
         free(line);
     }
     close(heredoc->fd_write);
     close(heredoc->fd_read);
 }
-int ft_herdoc(char *s, char **env, t_node **addresses)
+int ft_herdoc(t_node *node, char **env, t_node **addresses)
 {
     int         pid;
     int			status;
@@ -477,11 +478,11 @@ int ft_herdoc(char *s, char **env, t_node **addresses)
         return (-1);
     run_signals(0);
     pid = fork();
-    if(pid == -1)
+    if (pid == -1)
         return (-1);
     if(pid == 0)
     {
-        ft_read_input(s, &heredoc, env, addresses);
+        ft_read_input(node, &heredoc, env, addresses);
         exit(0);
     }
     if (wait(&status) == -1)

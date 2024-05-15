@@ -6,7 +6,7 @@
 /*   By: aben-cha <aben-cha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/28 02:24:09 by miguiji           #+#    #+#             */
-/*   Updated: 2024/05/13 16:27:07 by aben-cha         ###   ########.fr       */
+/*   Updated: 2024/05/15 15:54:05 by aben-cha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void    expand(t_node *node, t_env *env, t_node **addresses, char *response)
 
     x = 0;
     i = 0;
-    if(!node || !ft_strcmp(node->type, "s_quote"))
+    if (!node || !ft_strcmp(node->type, "s_quote"))
         return ;
     while(node->value && ((char *)node->value)[i])
     {
