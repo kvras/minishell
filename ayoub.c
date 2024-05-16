@@ -313,31 +313,6 @@ int ft_wait(int size, int pid)
     return (0);
 }
 
-void execute_commands(t_command *cmd, t_env *env, t_node **addresses)
-{
-    char	*path;
-    int		i;
-    int		pid;
-    int 	size;
-
-	i = 0;
-	pid = 0;
-	size = ft_lstsize_cmd(cmd);
-    path = get_environment(env->env, "PATH", addresses);
-    while(cmd) 
-    {
-        if (!builtin_key(cmd, addresses))
-            cmd->cmd = ft_pathname(path, cmd->cmd, env->env, addresses);
-        if(i == 0 && !cmd->next && is_builtin(cmd, env, addresses))
-            return ;
-        make_process(cmd, env, &pid, addresses);
-        cmd = cmd->next;
-        i++;
-    }
-	if (ft_wait(size, pid))
-        exit_status(1);
-}
-
 void check_errors_child(char *cmd)
 {
 	if(cmd[0] == '.' && cmd[1] == '/')
@@ -362,72 +337,87 @@ void check_errors_child(char *cmd)
     exit(127);
 }
 
-int child_process(t_command *cmd, t_env *env, int *fd, t_node **addr) 
+int	make_process(char **cmd, char **path, int fd_out, int flag)
 {
-    signal_default();
-	if (dup2(cmd->input, 0) == -1)
-		return (1);
-    if (cmd->input != 0)
-        if (close(cmd->input) == -1)
-			return (1);
-    if (cmd->next && cmd->output == 1) 
-	{
-		if(dup2(fd[1], 1) == -1 || close(fd[1]) == -1)
-			return (1);
-    }
-    else if (cmd->output != 1) 
-	{
-		if (dup2(cmd->output, 1) == -1 || close(cmd->output) == -1)
-			return (1);
-    }
-    if (!is_builtin(cmd, env, addr) && cmd->cmd[0][0] != '\0') 
-	{
-        execve(cmd->cmd[0], cmd->cmd,env->env);
-        check_errors_child(cmd->cmd[0]);
-    }
-    exit(0);
-}
+	int		fd[2];
+	int		pid;
+	char	*matching_path;
 
-void parent_process(t_command *command, int *i, int pid, int *fd) 
-{
-    *i = pid;
-	if (close(fd[1]) == -1)
-		return ;
-    command = command -> next;
-    if (command)
-        command->input = fd[0];
-    else
+	if (pipe(fd) == -1)
+		return (write(2, "pipe failed\n", 12));
+	pid = fork();
+	if (pid == 0)
 	{
-		if (close(fd[0]) == -1)
-			return ;
+        signal_default();
+		close(fd[0]);
+		if (!test_execution(path, cmd, &matching_path))
+			(check_errors_child(cmd[0]), exit(127));
+		if (flag == 1 && dup2(fd_out, 1) == -1)
+			return (ft_putstr_fd("dup2 failed\n", 2));
+		if (flag != 1 && dup2(fd[1], 1) == -1)
+			return (ft_putstr_fd("dup2 failed\n", 2));
+		close(fd[1]);
+		if (!is_builtin(cmd, NULL, NULL))
+        {
+            execve(matching_path, cmd, NULL);
+			check_errors_child(cmd[0]);
+        }
 	}
+	else if (pid == -1)
+		ft_putstr_fd("fork failed\n", 2);
+	if (dup2(fd[0], 0) == -1)
+		ft_putstr_fd("dup2 failed\n", 2);
+	(close(fd[1]), close(fd[0]));
+    return (0);
 }
+char	*test_execution(char **paths, char **command, char **matching_path)
+{
+	int		i;
+	char	*temp;
 
-int make_process(t_command *command, t_env *env, int *i, t_node **addresses) 
+	temp = NULL;
+	i = 0;
+	while (paths && paths[i] && command[0] && command[0][0] != '\0')
+	{
+		if (command[0][0] != '/')
+		{
+			temp = ft_strjoin(paths[i], "/", NULL);
+			if (temp == NULL)
+				return (NULL);
+			*matching_path = ft_strjoin(temp, *command, NULL);
+			if (*matching_path == NULL)
+				return (free(temp), NULL);
+		}
+		else
+			*matching_path = ft_strdup(*command, NULL);
+		free(temp);
+		if (!access(*matching_path, X_OK) || !*matching_path)
+			return (*matching_path);
+		free(*matching_path);
+		i++;
+	}
+	return (NULL);
+}
+int loop_process(t_command *command, t_env *env, t_node **addresses) 
 {
     int fd[2];
-    int pid;
-
-    pid = 1;
+    int i = 0;
     run_signals(0);
-    if(!command->cmd)
-        return (1);
-    if(command->next)
-	{
-		if (pipe(fd) == -1)
-			return (1);	
-	}
-    if (command->input != -1)
-	    pid = fork();
-    if (pid == -1)
-        return (1);
-    if (pid == 0)
-	{
-		if (child_process(command, env, fd, addresses))
-			exit(1);
-	}
-    else 
-        parent_process(command, i, pid, fd);
+    if (!command)
+        return (0);
+    char **paths = ft_split(get_environment(env->env, "PATH", addresses), ':', addresses);
+    if (dup2(command->input, 0) == -1)
+		return (write(2, "dup2 failed\n", 12), 0);
+	while (command->next)
+    {
+		make_process(command->cmd, paths,command->output ,0);
+        command = command->next;
+        i++;
+    }
+    if(i == 0 && is_builtin(command, env, addresses))
+        return 1;
+    make_process(command->cmd, paths,command->output, 1);
+    while (wait(NULL) > 0);
     return (0);
 }
 

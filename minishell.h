@@ -76,13 +76,13 @@ int	    ft_isalpha(int c);
 //-----------------------------------------------------
 
 // t_command *set_newlist(t_node **node, t_env *env, t_node **addresses);
+char	*test_execution(char **paths, char **command, char **matching_path);
 t_command *set_newlist(t_node **node, t_env *env, t_node **addresses);
 void handle_space(t_node **node, char ***array, char **s, t_node **addresses);
 // void handle_pipe(t_node **node, t_command **cmd, char ***array, t_fd *fd, t_node **addresses);
 void handle_pipe(t_node **node, t_new_list **new, t_fd *fd, t_node **addresses);
 int  handle_append_or_red_out(t_node **node, int *fd_out, int flag);
 int handle_here_doc_or_rd_in(t_node **node, t_fd *fd, char **env, t_node **addresses);
-void execute_commands(t_command *cmd, t_env *env, t_node **addresses);
 void display_cmd(t_command *cmd);
 t_command *ft_lstnew_cmd(char **cmd, int input, int output, t_node **addresses);
 void ft_lstadd_back_cmd(t_command **lst, t_command *new);
@@ -92,8 +92,8 @@ char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses);
 int     ft_herdoc(t_node *node, char **env, t_node **addresses);
 // int     ft_herdoc(char *s, t_env *env, t_node **addresses);
 // int ft_herdoc(char *s, t_node **addresses);
-// int make_process(t_command *command, t_env *env, t_node **addresses);
-int make_process(t_command *command, t_env *env, int *i, t_node **addresses);
+int	make_process(char **cmd, char **path, int fd_out,int flag);
+int loop_process(t_command *command, t_env *env, t_node **addresses);
 char **ft_array(char **array, char *s, t_node **addresses);
 //-------------------signals functions
 int     exit_status(int exit_status);

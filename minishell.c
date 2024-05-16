@@ -250,19 +250,20 @@ int main(int argc, char **argv, char **env)
     t_node  *addresses;
 	t_env   envir;
 	struct termios original_termios;
-	atexit(f);
+	// atexit(f);
 	line = NULL;
 	tokens = NULL;
 	addresses = NULL;
 	envir.env = get_env(env);
 	envir.export = get_env(env);
 	get_terminal_attr(&original_termios);
+	int backup = dup(0);
 	while (1)
 	{
 		run_signals(1);
 		line = readline("minishell$ ");
 		if(!line)
-			return (free(line),	free_arr(envir.env), free_arr(envir.export), rl_clear_history(), ctr_d(), 0);
+				return (free(line),	free_arr(envir.env), free_arr(envir.export), rl_clear_history(), close(backup), ctr_d(), 0);
 		if(quotes_syntax(line))
 		{
 			free(line);
@@ -272,7 +273,8 @@ int main(int argc, char **argv, char **env)
 		if (line[0] != '\0' && ((line[0] < 9 || line[0] > 13) && line[0] != 32))
 			add_history(line);
 		parse_line(line, &tokens, &addresses, 0);
-		execute_commands(set_newlist(&tokens, &envir, &addresses), &envir, &addresses);
+		loop_process(set_newlist(&tokens, &envir, &addresses), &envir, &addresses);
+		dup2(backup, 0);
 		tokens = NULL;
 		free(line);
 		line = NULL;
