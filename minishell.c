@@ -226,7 +226,7 @@ int is_builtin(t_command *commands, t_env *env, t_node **addresses)
 
 void f(void)
 {
-	system("leaks minishell");
+	sleep(5);
 }
 void free_arr(char **arr)
 {
@@ -250,7 +250,7 @@ int main(int argc, char **argv, char **env)
     t_node  *addresses;
 	t_env   envir;
 	struct termios original_termios;
-	// atexit(f);
+	atexit(f);
 	line = NULL;
 	tokens = NULL;
 	addresses = NULL;

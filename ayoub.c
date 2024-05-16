@@ -227,8 +227,6 @@ int open_file1(t_node **node, t_fd *fd, char **env, t_node **addresses)
     t_node *tmp;
     
     if (fd->flag)
-        fd->in = open((*node)->value, O_RDONLY, 0644);
-    else
         fd->in = ft_herdoc(*node, env, addresses);
     if (fd->in == -1)
         ft_putstr_fd("No such file or directory\n", 2);
