@@ -45,6 +45,7 @@ typedef struct s_fd{
     int in;
     int flag;
 }		t_fd;
+
 typedef struct s_new_list
 {
     char        *s;
@@ -92,7 +93,7 @@ char	**ft_pathname(char *p, char **cmdargs, char **env, t_node **addresses);
 int     ft_herdoc(t_node *node, char **env, t_node **addresses);
 // int     ft_herdoc(char *s, t_env *env, t_node **addresses);
 // int ft_herdoc(char *s, t_node **addresses);
-int	make_process(char **cmd, char **path, int fd_out,int flag);
+int	make_process(t_command *cmd, t_env *env, int fd_out, int flag);
 int loop_process(t_command *command, t_env *env, t_node **addresses);
 char **ft_array(char **array, char *s, t_node **addresses);
 //-------------------signals functions
@@ -140,7 +141,7 @@ int ft_strcmp(const char *s1, const char *s2);
 char    *ft_substr(const char *str, unsigned int start, size_t len, t_node **addresses);
 //-----------------------------------------------------
 void exec_echo(char **cmd, char **env, t_node **addresses);
-char    *get_environment(char **envp, char *var, t_node **addresses);
+char	*get_environment(char **envp, char *var, t_node **addresses);
 char *request_env(char **envp, char *var);
 int exec_pwd();
 int exec_cd(char *path, t_env *env, t_node **addresses);

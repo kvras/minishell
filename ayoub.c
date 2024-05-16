@@ -337,30 +337,28 @@ void check_errors_child(char *cmd)
     exit(127);
 }
 
-int	make_process(char **cmd, char **path, int fd_out, int flag)
+int	make_process(t_command *cmd, t_env *env, int fd_out, int flag)
 {
 	int		fd[2];
 	int		pid;
 	char	*matching_path;
 
 	if (pipe(fd) == -1)
-		return (write(2, "pipe failed\n", 12));
+		return (write(2, "pipe failed\n", 12), 0);
 	pid = fork();
 	if (pid == 0)
 	{
         signal_default();
 		close(fd[0]);
-		if (!test_execution(path, cmd, &matching_path))
-			(check_errors_child(cmd[0]), exit(127));
 		if (flag == 1 && dup2(fd_out, 1) == -1)
-			return (ft_putstr_fd("dup2 failed\n", 2));
+			return (ft_putstr_fd("dup2 failed\n", 2),0);
 		if (flag != 1 && dup2(fd[1], 1) == -1)
-			return (ft_putstr_fd("dup2 failed\n", 2));
+			return (ft_putstr_fd("dup2 failed\n", 2),0);
 		close(fd[1]);
-		if (!is_builtin(cmd, NULL, NULL))
+		if (!is_builtin(cmd, env, NULL))
         {
-            execve(matching_path, cmd, NULL);
-			check_errors_child(cmd[0]);
+            execve(cmd->cmd[0], cmd->cmd, env->env);
+			check_errors_child(cmd->cmd[0]);
         }
 	}
 	else if (pid == -1)
@@ -402,21 +400,26 @@ int loop_process(t_command *command, t_env *env, t_node **addresses)
 {
     int fd[2];
     int i = 0;
+    char *path;
     run_signals(0);
     if (!command)
         return (0);
-    char **paths = ft_split(get_environment(env->env, "PATH", addresses), ':', addresses);
+    path = get_environment(env->env, "PATH", addresses);
     if (dup2(command->input, 0) == -1)
 		return (write(2, "dup2 failed\n", 12), 0);
 	while (command->next)
     {
-		make_process(command->cmd, paths,command->output ,0);
+        if (!builtin_key(command, addresses))
+            command->cmd = ft_pathname(path, command->cmd, env->env, addresses);
+		make_process(command, env,command->output ,0);
         command = command->next;
         i++;
     }
     if(i == 0 && is_builtin(command, env, addresses))
         return 1;
-    make_process(command->cmd, paths,command->output, 1);
+    if (!builtin_key(command, addresses))
+        command->cmd = ft_pathname(path, command->cmd, env->env, addresses);
+    make_process(command, env,command->output, 1);
     while (wait(NULL) > 0);
     return (0);
 }
