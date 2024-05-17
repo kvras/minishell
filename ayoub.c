@@ -227,6 +227,8 @@ int open_file1(t_node **node, t_fd *fd, char **env, t_node **addresses)
     t_node *tmp;
     
     if (fd->flag)
+        fd->in = open((*node)->value, O_RDONLY, 0644);
+    else
         fd->in = ft_herdoc(*node, env, addresses);
     if (fd->in == -1)
         ft_putstr_fd("No such file or directory\n", 2);
@@ -349,12 +351,12 @@ int	make_process(t_command *cmd, t_env *env, int fd_out, int flag)
 	if (pid == 0)
 	{
         signal_default();
-		close(fd[0]);
+		// close(fd[0]);
 		if (flag == 1 && dup2(fd_out, 1) == -1)
 			return (ft_putstr_fd("dup2 failed\n", 2),0);
 		if (flag != 1 && dup2(fd[1], 1) == -1)
 			return (ft_putstr_fd("dup2 failed\n", 2),0);
-		close(fd[1]);
+		// close(fd[1]);
 		if (!is_builtin(cmd, env, NULL))
         {
             execve(cmd->cmd[0], cmd->cmd, env->env);
@@ -401,6 +403,7 @@ int loop_process(t_command *command, t_env *env, t_node **addresses)
     int fd[2];
     int i = 0;
     char *path;
+
     run_signals(0);
     if (!command)
         return (0);
