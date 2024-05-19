@@ -22,7 +22,7 @@ expand $''   expand $'l'
 # /Users/miguiji
 # /Users/miguiji/Desktop/mini
 
-
+#< minishell.h cat | << e
 # minishell$ << 1"2"'3' cat
 # > 1
 # minishell: 23: command not found

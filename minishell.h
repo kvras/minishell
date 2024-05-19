@@ -17,16 +17,16 @@
 #define FALSE 0
 typedef struct s_env
 {
-    char **env;
-    char **export;
+	char **env;
+	char **export;
 } t_env;
 
 typedef struct s_command
 {
-    char    **cmd;
-    int     input;
-    int     output;
-    struct s_command   *next;
+	char    **cmd;
+	int     input;
+	int     output;
+	struct s_command   *next;
 }       t_command;
 
 typedef struct s_args{
@@ -42,27 +42,28 @@ typedef struct s_node{
 
 typedef struct s_fd{
 	int out;
-    int in;
-    int flag;
+	int in;
+	int flag;
 }		t_fd;
 
 typedef struct s_new_list
 {
-    char        *s;
-    char        **array;
-    t_command    *cmd;
-    t_fd        fd;
+	char        *s;
+	char        **array;
+	t_command    *cmd;
+	t_fd        fd;
 }               t_new_list;
 
 typedef struct s_heredoc
 {
-    int fd_write;
-    int fd_read;
+	int fd_write;
+	int fd_read;
 }   t_heredoc;
 
 //-----------------------------------------------------
 int				ft_cd(char **args, t_env *env);
-
+char	*ft_ft_strdup(const char *s);
+char	*ft_ft_strjoin(const char *s1, const char *s2);
 size_t	ft_strlen(const char *s);
 void	*ft_memcpy(void *dst, const void *src, size_t len);
 void	*ft_memmove(void *dst, const void *src, size_t len);
@@ -134,8 +135,11 @@ int     case_two(char *var, int i, int size);
 //-----------------------
 int pipe_parse_error(t_node *node);
 char **get_env(char **env);
-void exec_export(char **vars, char ***env, char ***ex_env, t_node **addresses);
-void exec_unset(char *s, char ***env, t_node **addresses);
+void exec_export(char **vars, char ***env, char ***ex_env);
+char	**ft_ft_array(char **array, char *s);
+// void exec_unset(char *s, char ***env, t_node **addresses);
+void exec_unset(char **vars, t_env *env);
+
 int ft_isalnum(int c);
 int ft_strcmp(const char *s1, const char *s2);
 char    *ft_substr(const char *str, unsigned int start, size_t len, t_node **addresses);
@@ -158,7 +162,15 @@ bool    hande_tokens(t_node **node, t_env *env, t_new_list *new, t_node **addres
 t_node  *ft_lstnew1(void *value, char *type, t_node **addresses);
 t_node  *ft_lstlast1(t_node *lst);
 void	ft_lstadd_back1(t_node **lst, t_node *new);
-void    ft_expand(char *line, t_node **commands, int *offset, t_node **addresses);
-void    parse_line(char *line, t_node **commands, t_node **addresses, int i);
 int     check_char(char *s,char c);
+void	ft_expand(char *line, t_node **commands, int *offset, t_node **add);
+void	ft_word(char *line, t_node **commands, int *offset, t_node **addresses);
+void	ft_quotes(char *line, t_node **commands, int *offset, t_node **add);
+void    parse_line(char *line, t_node **commands, t_node **addresses, int i);
+int     check_pipes(char *line);
+int     special_char(char c);
+int     quotes_syntax(char *line);
+int     check_quote(char *line, char c,	int *offset);
+int	free_arr(char **arr);
+void	replace_node(t_node *n, char *line, char *res, t_node **add);
 #endif
