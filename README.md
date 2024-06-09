@@ -1,6 +1,6 @@
 # Minishell Project - 42 School
 
-![Minishell](shell.png "Minishell")
+![Minishell](minishell.png "Minishell")
 
 ## Project Overview
 
