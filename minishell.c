@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miguiji <miguiji@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aben-cha <aben-cha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/18 16:09:21 by miguiji           #+#    #+#             */
-/*   Updated: 2024/05/18 16:40:35 by miguiji          ###   ########.fr       */
+/*   Updated: 2024/05/19 20:20:22 by aben-cha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	is_builtin(t_command *commands, t_env *env, t_node **addresses)
 	if (!commands->cmd)
 		return (0);
 	if (!ft_strcmp(commands->cmd[0], "echo"))
-		return (exec_echo(commands->cmd, env->env, addresses), 1);
+		return (exec_echo(commands->cmd, addresses), 1);
 	else if (!ft_strcmp(commands->cmd[0], "pwd"))
 		return (exec_pwd(), 1);
 	else if (!ft_strcmp(commands->cmd[0], "cd"))
@@ -82,7 +82,7 @@ int	main(int argc, char **argv, char **envp)
 	t_env			env;
 	struct termios	original_termios;
 
-	init(&add, &env, &tokens, envp);
+	((void)argc, (void)argv, init(&add, &env, &tokens, envp));
 	get_terminal_attr(&original_termios);
 	while (1)
 	{
@@ -95,7 +95,7 @@ int	main(int argc, char **argv, char **envp)
 		if (line[0] != '\0' && ((line[0] < 9 || line[0] > 13) && line[0] != 32))
 			add_history(line);
 		parse_line(line, &tokens, &add, 0);
-		loop_process(set_newlist(&tokens, &env, &add), &env, &add);
+		loop_process(set_newlist(&tokens, &env, &add), &env, &add, 0);
 		restore_terminal_attributes(&original_termios);
 		(free(line), free_addresses(add));
 		init(&add, NULL, &tokens, NULL);
