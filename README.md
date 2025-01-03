@@ -6,7 +6,9 @@
 
 ## Project Overview
 
-Minishell is a project at 42 school, which aims to create a shell. The objective is to understand the core of the Unix system and explore an important part of this system’s API in depth.
+Minishell is a project which aims to create a shell. In this challenge, i builded my own POSIX compliant shell that's capable of interpreting shell commands, running external programs and builtin commands like cd, pwd, echo and more. Along the way, i learned about shell command parsing, REPLs, builtin commands, and more...
+
+
 
 ## Features
 
