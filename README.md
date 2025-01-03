@@ -1,10 +1,12 @@
-# Minishell Project - 42 School
+![shell](shell.gif "shell")
+
+# Build your own Shell
 
 ![Minishell](minishell.png "Minishell")
 
 ## Project Overview
 
-Minishell is a project at 42 school, which aims to create a simple shell. The objective is to understand the core of the Unix system and explore an important part of this system’s API in depth.
+Minishell is a project at 42 school, which aims to create a shell. The objective is to understand the core of the Unix system and explore an important part of this system’s API in depth.
 
 ## Features
 
