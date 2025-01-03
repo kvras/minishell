@@ -2,13 +2,7 @@
 
 # Build your own Shell
 
-![Minishell](minishell.png "Minishell")
-
-## Project Overview
-
 Minishell is a project which aims to create a shell. In this challenge, i builded my own POSIX compliant shell that's capable of interpreting shell commands, running external programs and builtin commands like cd, pwd, echo and more. Along the way, i learned about shell command parsing, REPLs, builtin commands, and more...
-
-
 
 ## Features
 
@@ -20,6 +14,8 @@ Minishell is a project which aims to create a shell. In this challenge, i builde
 - Environment variables `$VAR_NAME`
 - Signal management `ctrl-C`, `ctrl-\`, `ctrl-D`
 - heredoc
+
+![Minishell](minishell.png "Minishell")
 
 ## Building and Running
 
